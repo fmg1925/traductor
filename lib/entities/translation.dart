@@ -2,11 +2,17 @@ class Translation {
   final String originalText;
   final String translatedText;
   final String detectedLanguage;
+  final String target;
+  final List<String> originalIpa;
+  final List<String> translatedIpa;
 
   Translation({
     required this.originalText,
     required this.translatedText,
     required this.detectedLanguage,
+    required this.target,
+    required this.originalIpa,
+    required this.translatedIpa,
   });
 
   factory Translation.fromJson(Map<String, dynamic> json) {
@@ -14,6 +20,10 @@ class Translation {
       originalText: (json['originalText'] ?? '') as String,
       translatedText: (json['translatedText'] ?? '') as String,
       detectedLanguage: (json['detectedLanguage'] ?? '') as String,
+      target: (json['target'] ?? '') as String,
+      originalIpa: List<String>.from(json['originalIpa'] ?? []),
+      translatedIpa: List<String>.from(json['translatedIpa'] ?? []),
+
     );
   }
 
@@ -21,5 +31,8 @@ class Translation {
     'originalText': originalText,
     'translatedText': translatedText,
     'detectedLanguage': detectedLanguage,
+    'target': target,
+    'originalIpa': originalIpa,
+    'translatedIpa': translatedIpa,
   };
 }

@@ -6,25 +6,37 @@ class WordCache {
   static Box get _box => Hive.box('word_cache');
   static bool translating = false;
 
-  static String _makeKey(String word, String target) =>
-    '${word.toLowerCase()}::$target';
+  static String _makeKey(String originalWord, String origin, String target) =>
+    '$originalWord::$origin::$target';
 
-  static Future<String?> get(String word, String target) async {
-    final key = _makeKey(word, target);
+  static final Map<String, Future<String>> _inProgress = {};
+
+  static Future<String?> get(String word, String origin, String target) async {
+    final key = _makeKey(word, origin, target);
 
     final cached = _box.get(key);
-    if (cached != null) return cached as String;
+    if (cached != null) return Future.value(cached as String);
 
-    if(translating) return null;
-    translating = true;
-    try {
-    final result = await translateWord(provider: provider, word: word, target: target);
-
-    await _box.put(key, result);
-    return result;
-    } finally {
-      translating = false;
+    if (_inProgress.isNotEmpty) {
+      return _inProgress[key]!;
     }
+
+    if(origin == target) {
+      await _box.put(key, word);
+      _inProgress.remove(key);
+      return word;
+    }
+
+    final resultado = translateWord(provider: provider, word: word, target: target)
+    .then((resultado) async {
+      await _box.put(key, resultado);
+      return resultado;
+    }).whenComplete(() {
+      _inProgress.remove(key);
+    });
+
+    _inProgress[key] = resultado;
+    return resultado;
   }
 
   static Future<void> clear() async {

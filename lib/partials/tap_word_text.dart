@@ -6,16 +6,33 @@ class TapWordText extends StatefulWidget {
   final String text;
   final String targetLang;
   final String sourceLang;
+
+  final List<String>? ipaPerWord;
+
+  final String originalIpa;
+  final String translatedIpa;
+
   final bool inverse;
-  final TextStyle? style;
+  final TextStyle? wordStyle;
+  final TextStyle? ipaStyle;
+  final double gap;
+  final double hSpacing;
+  final double vSpacing;
 
   const TapWordText({
     super.key,
     required this.text,
     required this.targetLang,
     required this.sourceLang,
+    this.ipaPerWord,
+    this.originalIpa = '',
+    this.translatedIpa = '',
     this.inverse = false,
-    this.style,
+    this.wordStyle,
+    this.ipaStyle,
+    this.gap = 2,
+    this.hSpacing = 10,
+    this.vSpacing = 6,
   });
 
   @override
@@ -51,27 +68,34 @@ class _TapWordTextState extends State<TapWordText> {
            (rune >= 0xAC00 && rune <= 0xD7AF);
   }
 
-  List<String> _tokenize(String input) {
+  (List<String> tokens, List<int> wordTokenIndexes) _tokenize(String input) {
     final runes = input.runes.toList();
     final tokens = <String>[];
-    if (runes.isEmpty) return tokens;
+    final wordIdxs = <int>[];
+    if (runes.isEmpty) return (tokens, wordIdxs);
 
     final sb = StringBuffer();
     bool inWord = _isLetter(runes.first);
 
+    void flush(bool wasWord) {
+      if (sb.isEmpty) return;
+      tokens.add(sb.toString());
+      if (wasWord) wordIdxs.add(tokens.length - 1);
+      sb.clear();
+    }
+
     for (final r in runes) {
       final isWordChar = _isLetter(r);
       if (isWordChar == inWord) {
-        sb.write(String.fromCharCode(r));
+        sb.writeCharCode(r);
       } else {
-        tokens.add(sb.toString());
-        sb.clear();
-        sb.write(String.fromCharCode(r));
+        flush(inWord);
+        sb.writeCharCode(r);
         inWord = isWordChar;
       }
     }
-    if (sb.isNotEmpty) tokens.add(sb.toString());
-    return tokens;
+    flush(inWord);
+    return (tokens, wordIdxs);
   }
 
   bool translating = false;
@@ -81,52 +105,106 @@ class _TapWordTextState extends State<TapWordText> {
     final trim = token.trim();
     if (trim.isEmpty) return;
 
-    final effectiveTarget = widget.inverse ? widget.sourceLang : widget.targetLang;
+    final effectiveTarget = widget.inverse
+        ? widget.sourceLang
+        : widget.targetLang;
 
-    final result = await WordCache.get(trim, effectiveTarget);
+    final effectiveOrigin = widget.inverse
+        ? widget.targetLang
+        : widget.sourceLang;
 
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('“$trim” → $effectiveTarget'),
-        content: Text((result == null || result.isEmpty) ? '—' : result),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK')),
-        ],
-      ),
-    );
+    try {
+      translating = true;
+      final result = await WordCache.get(trim, effectiveOrigin, effectiveTarget);
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text('“$trim” → $effectiveTarget'),
+          content: Text((result == null || result.isEmpty) ? '—' : result),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      translating = false;
+    } catch (e) {
+      if (!mounted) return;
+      translating = false;
+      throw Exception("Error traduciendo palabra $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final tokens = _tokenize(widget.text);
-    final defaultStyle = widget.style ?? DefaultTextStyle.of(context).style;
-    final spans = <TextSpan>[];
+    final (tokens, wordTokenIndexes) = _tokenize(widget.text);
 
-    for (final tk in tokens) {
-      final isWord = tk.runes.isNotEmpty && _isLetter(tk.runes.first);
-      if (isWord) {
+    final defaultStyle = DefaultTextStyle.of(context).style;
+    final wordStyle = widget.wordStyle ??
+        defaultStyle.copyWith(fontSize: 16, height: 1.15, color: Colors.black87, fontWeight: FontWeight.w600);
+    final ipaStyle = widget.ipaStyle ??
+        defaultStyle.copyWith(fontSize: 13, height: 1.15, color: const Color(0xFF424242));
+
+    final ipa = widget.ipaPerWord ?? const <String>[];
+    int wordCounter = 0;
+
+    final children = <Widget>[];
+    for (int i = 0; i < tokens.length; i++) {
+      final tk = tokens[i];
+      final isWordToken = wordTokenIndexes.contains(i);
+
+      if (isWordToken) {
+        final ipaForThisWord = (wordCounter < ipa.length) ? ipa[wordCounter] : '';
+        wordCounter++;
+
         final rec = TapGestureRecognizer()..onTap = () => _onTapWord(tk);
         _recognizers.add(rec);
-        spans.add(TextSpan(
-          text: tk,
-          style: defaultStyle.copyWith(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+
+        final column = Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(tk, style: wordStyle, textAlign: TextAlign.center),
+            SizedBox(height: widget.gap),
+            if (ipaForThisWord.isNotEmpty)
+              Text(ipaForThisWord, style: ipaStyle, textAlign: TextAlign.center),
+          ],
+        );
+
+        children.add(
+          IntrinsicWidth(
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child:  
+                GestureDetector(
+                onTap: () => _onTapWord(tk),
+                behavior: HitTestBehavior.opaque,
+                child: column,
+              ),
+            ),
+            ),
           ),
-          recognizer: rec,
-        ));
+        );
       } else {
-        spans.add(TextSpan(text: tk, style: defaultStyle));
+        if (tk.trim().isEmpty) {
+          children.add(const SizedBox(width: 6));
+        } else {
+          children.add(Text(tk, style: defaultStyle));
+        }
       }
     }
 
-    return RichText(
-      text: TextSpan(style: defaultStyle, children: spans),
-      softWrap: true,
-      textAlign: TextAlign.start,
+    return Wrap(
+      alignment: WrapAlignment.start,
+      runAlignment: WrapAlignment.start,
+      crossAxisAlignment: WrapCrossAlignment.start,
+      spacing: widget.hSpacing,
+      runSpacing: widget.vSpacing,
+      children: children,
     );
   }
 }

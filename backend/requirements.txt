@@ -3,3 +3,6 @@ python-dotenv
 requests
 nltk
 flask-cors
+diskcache
+phonemizer
+pytesseract

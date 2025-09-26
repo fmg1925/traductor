@@ -39,11 +39,19 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   flutter_launcher_icons: ^0.14.4
+  web: ^1.1.1
+  google_fonts: ^6.3.2
+  image_picker: ^1.2.0
 
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon.jpg"
+  web:
+    generate: true
+    image_path: "assets/icon.jpg"
+    background_color: "#ffffff"
+    theme_color: "#ffffff"
 
 dev_dependencies:
   flutter_test:

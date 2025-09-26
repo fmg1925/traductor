@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
+import 'dart:io' show Platform, File;
 import 'package:http/http.dart' as http;
 import '../../entities/translation.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -12,27 +12,34 @@ class DataProvider {
     : Uri.parse('http://localhost:3000');
 }
 
-Future<Translation> fetchTranslation(DataProvider provider, String originalLanguage, String target) async {
-  final response = await http.post(provider.uri, headers: {'Accept': 'application/json'},
-  body: jsonEncode(<String, dynamic>{
-    'originalLanguage': originalLanguage,
-    'target': target
-  }) );
-  final bodyText = utf8.decode(response.bodyBytes);
+Future<Translation> fetchTranslation(
+  DataProvider provider,
+  String originalLanguage,
+  String target,
+) async {
+    final response = await http.post(
+      provider.uri,
+      headers: {'Accept': 'application/json'},
+      body: jsonEncode(<String, dynamic>{
+        'originalLanguage': originalLanguage,
+        'target': target,
+      }),
+    );
+    final bodyText = utf8.decode(response.bodyBytes);
 
-  if (response.statusCode == 200 || response.statusCode == 207) {
-    final decoded = jsonDecode(bodyText);
-    if (decoded is Map<String, dynamic>) {
-      return Translation.fromJson(decoded);
-    } else if (decoded is List && decoded.isNotEmpty) {
-      return Translation.fromJson(decoded.first as Map<String, dynamic>);
+    if (response.statusCode == 200 || response.statusCode == 207) {
+      final decoded = jsonDecode(bodyText);
+      if (decoded is Map<String, dynamic>) {
+        return Translation.fromJson(decoded);
+      } else if (decoded is List && decoded.isNotEmpty) {
+        return Translation.fromJson(decoded.first as Map<String, dynamic>);
+      } else {
+        throw FormatException('JSON inesperado del servidor');
+      }
     } else {
-      throw FormatException('JSON inesperado del servidor');
+      throw Exception('Error en fetchTranslation HTTP ${response.statusCode}: $bodyText');
     }
-  } else {
-    throw Exception('HTTP ${response.statusCode}: $bodyText');
-  }
-}
+} 
 
 Future<Translation> fetchTranslationFor(DataProvider provider, String text, String source, String target) async {
   final response = await http.post(
@@ -54,13 +61,22 @@ Future<Translation> fetchTranslationFor(DataProvider provider, String text, Stri
     final detectedLanguage = dl is Map
     ? (dl['language'] as String? ?? '')
     : (dl as String? ?? '');
+    final originalIpa = (decoded['originalIpa'] as List<dynamic>? ?? [])
+    .map((e) => e.toString())
+    .toList();
+    final translatedIpa = (decoded['translatedIpa'] as List<dynamic>? ?? [])
+    .map((e) => e.toString())
+    .toList();
     return Translation(
       originalText: text,
       translatedText: translated,
       detectedLanguage: detectedLanguage,
+      target: target,
+      originalIpa: originalIpa,
+      translatedIpa: translatedIpa,
     );
   } else {
-    throw Exception('HTTP ${response.statusCode}: $bodyText');
+    throw Exception('Error en fetchTranslationFor $provider $text $source $target ${response.statusCode}: $bodyText');
   }
 }
 
@@ -76,7 +92,23 @@ Future<String> translateWord({
     body: jsonEncode({'q': word, 'source': source, 'target': target, 'format': 'text'}),
   );
   if (res.statusCode != 200) {
-    throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    throw Exception('Error en translateWord $provider $word $target HTTP ${res.statusCode}: ${res.body}');
+  }
+  final m = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  return (m['translatedText'] as String?) ?? '';
+}
+
+Future<String> ocr({
+  required DataProvider provider,
+  required File imageFile,
+  required String target,
+}) async {
+  final uri = Uri.parse('${provider.uri}/ocr');
+  final req = http.MultipartRequest('POST', uri)..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+  final res = await http.Response.fromStream(await req.send());
+
+  if (res.statusCode != 200) {
+    throw Exception('Error en ocr $provider $imageFile $target HTTP ${res.statusCode}: ${res.body}');
   }
   final m = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   return (m['translatedText'] as String?) ?? '';

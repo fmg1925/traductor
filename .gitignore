@@ -47,7 +47,8 @@ app.*.map.json
 LTEngine/
 backend/.venv
 .env
-.vscode
 __pycache__
 .gradle
 .kotlin
+.cache
+informe/
