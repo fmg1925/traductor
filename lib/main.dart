@@ -6,7 +6,7 @@ import 'src/web_title.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  await Hive.openBox('word_cache');
+  await Hive.openBox<String>('word_cache');
   WidgetsBinding.instance.addPostFrameCallback((_) {
     setWebTitle("Trilingo");
   });

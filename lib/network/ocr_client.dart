@@ -14,7 +14,7 @@ Future<Translation> ocrFromBytes({
   final res = await http.post(
     uri,
     headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-    body: jsonEncode({'image_b64': base64Encode(bytes)}),
+    body: jsonEncode({'image_b64': base64Encode(bytes), 'target': target}),
   );
 
   if (res.statusCode != 200) {

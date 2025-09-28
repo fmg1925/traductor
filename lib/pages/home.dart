@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:traductor/helpers/tts.dart';
 import '../entities/translation.dart';
 import 'package:traductor/domain/providers/data_provider.dart';
 import '../partials/tap_word_text.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../network/ocr_client.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
 final ipaStyle = GoogleFonts.notoSans(
   fontSize: 13,
@@ -29,6 +29,29 @@ const Map<String, String> languages = {
   'ko': 'Coreano',
 };
 
+String _ttsLocaleFor(String code) {
+  switch (code) {
+    case 'es':
+      return 'es-ES';
+    case 'en':
+      return 'en-US';
+    case 'fr':
+      return 'fr-FR';
+    case 'pt':
+      return 'pt-PT';
+    case 'ko':
+      return 'ko-KR';
+    case 'ja':
+      return 'ja-JP';
+    case 'zh':
+      return 'zh-CN';
+    default:
+      return 'en-US';
+  }
+}
+
+final tts = Tts();
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -39,11 +62,22 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _controller = TextEditingController();
   final provider = DataProvider();
+
   String sourceLang = 'auto';
   String targetLang = 'es';
   Future<Translation>? translationFuture;
 
   int index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    tts.init(
+      onStateChanged: (_) {
+        if (mounted) setState(() {});
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -66,51 +100,55 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  bool _loading = false;
-
   Future<XFile?> pickPhotoUniversal() async {
-  final picker = ImagePicker();
+    final picker = ImagePicker();
 
-  final canUseCamera = kIsWeb ||
-      defaultTargetPlatform == TargetPlatform.android ||
-      defaultTargetPlatform == TargetPlatform.iOS;
-
-  if (canUseCamera) {
-    return picker.pickImage(source: ImageSource.camera, imageQuality: 85, maxWidth: 1600, maxHeight: 1600);
-  } else {
-    return picker.pickImage(source: ImageSource.gallery, imageQuality: 85, maxWidth: 1600, maxHeight: 1600);
+    return picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1600,
+      maxHeight: 1600,
+    );
   }
-}
 
   Future<void> _ocr() async {
-  final x = await pickPhotoUniversal();
-  if (x == null) return;
+    final x = await pickPhotoUniversal();
+    if (x == null) return;
 
-  if (mounted) setState(() => _loading = true);
-  try {
-    final bytes = await x.readAsBytes();
-    final traduccion = await ocrFromBytes(
-      provider: provider,
-      bytes: bytes,
-      target: targetLang
-    );
-    debugPrint('OCR: ${traduccion.translatedText}');
-  } catch (e) {
-    debugPrint('OCR error: $e');
-  } finally {
-    if (mounted) setState(() => _loading = false);
+    try {
+      final bytes = await x.readAsBytes();
+      setState(() {
+        translationFuture = ocrFromBytes(
+          provider: provider,
+          bytes: bytes,
+          target: targetLang,
+        );
+      });
+    } catch (e) {
+      debugPrint('OCR error: $e');
+      setState(() {
+        translationFuture = Future.error(e);
+      });
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar(),
       backgroundColor: Colors.pinkAccent,
-      body: IndexedStack(index: index, children: [
-        mainColumn(),
-        const DiccionarioView(),
-      ]),
+      body: IndexedStack(
+        index: index,
+        children: [
+          mainColumn(),
+          PracticeView(
+            provider: provider,
+            initialSourceLang: sourceLang,
+            initialTargetLang: targetLang,
+          ),
+          const DiccionarioView(),
+        ],
+      ),
       bottomNavigationBar: bottomNavBar(),
     );
   }
@@ -120,8 +158,21 @@ class _HomePageState extends State<HomePage> {
       selectedIndex: index,
       onDestinationSelected: (i) => setState(() => index = i),
       destinations: const [
-        NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Traducir'),
-        NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book_outlined), label: 'Diccionario'),        
+        NavigationDestination(
+          icon: Icon(Icons.translate),
+          selectedIcon: Icon(Icons.translate_outlined),
+          label: 'Traducir',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.mic),
+          selectedIcon: Icon(Icons.mic_sharp),
+          label: 'Practicar',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.menu_book_outlined),
+          selectedIcon: Icon(Icons.menu_book_outlined),
+          label: 'Diccionario',
+        ),
       ],
     );
   }
@@ -133,7 +184,6 @@ class _HomePageState extends State<HomePage> {
         languageDropdown(),
         const SizedBox(height: 12),
         generarButton(),
-        ocrButton(),
         const SizedBox(height: 12),
         Expanded(
           child: Padding(
@@ -149,29 +199,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   Padding generarButton() {
+    final isEmpty = _controller.text.trim().isEmpty;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ElevatedButton.icon(
             onPressed: _generar,
             icon: const Icon(Icons.play_arrow),
-            label: const Text('Generar traducción'),
+            label: Text(isEmpty ? 'Generar traducción' : 'Traducir'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Padding ocrButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
           ElevatedButton.icon(
             onPressed: _ocr,
             icon: const Icon(Icons.play_arrow),
@@ -201,6 +243,7 @@ class _HomePageState extends State<HomePage> {
                   setState(() => sourceLang = value);
                 }
               },
+              itemHeight: 60,
               items: languages.entries.map((e) {
                 return DropdownMenuItem<String>(
                   value: e.key,
@@ -221,16 +264,14 @@ class _HomePageState extends State<HomePage> {
                   });
                 }
               },
-              items: languages.entries
-                  .where((e) => e.key != 'auto')
-                  .map((e) {
+              items: languages.entries.where((e) => e.key != 'auto').map((e) {
                 return DropdownMenuItem<String>(
                   value: e.key,
                   child: Text(e.value),
                 );
               }).toList(),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -249,6 +290,7 @@ class _HomePageState extends State<HomePage> {
       ),
       child: TextField(
         controller: _controller,
+        onChanged: (_) => setState(() {}),
         decoration: const InputDecoration(
           filled: true,
           fillColor: Colors.white,
@@ -299,92 +341,106 @@ class _TranslationsArea extends StatelessWidget {
 
   FutureBuilder<Translation> traducciones() {
     return FutureBuilder<Translation>(
-    future: future,
-    builder: (context, snap) {
-      if (snap.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      if (snap.hasError) {
-        return SingleChildScrollView(
-          child: _tileRich(
-            'Error',
-            const SizedBox.shrink(),
-            const [],
-            color: Colors.red.shade50,
-            errorText: '${snap.error}',
-          ),
-        );
-      }
+      future: future,
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snap.hasError) {
+          return SingleChildScrollView(
+            child: _tileRich(
+              context,
+              'Error',
+              const SizedBox.shrink(),
+              color: Colors.red.shade50,
+              errorText: '${snap.error}',
+              onTts: () {},
+            ),
+          );
+        }
 
-      final t = snap.data!;
-      return ListView(
-        children: [
-          _tileRich(
-            'Original (${t.detectedLanguage})',
-            TapWordText(
-              text: t.originalText,
-              targetLang: targetLang,
-              sourceLang: t.detectedLanguage,
-              ipaPerWord: t.originalIpa,
-              wordStyle: wordStyle,
-              ipaStyle: ipaStyle,
+        final t = snap.data!;
+        return ListView(
+          padding: const EdgeInsets.all(12),
+          children: [
+            _tileRich(
+              context,
+              'Original (${t.detectedLanguage})',
+              TapWordText(
+                text: t.originalText,
+                targetLang: targetLang,
+                sourceLang: t.detectedLanguage,
+                ipaPerWord: t.originalIpa,
+                wordStyle: wordStyle,
+                ipaStyle: ipaStyle,
+              ),
+              onTts: () {
+                tts.changeLanguage(_ttsLocaleFor(t.detectedLanguage));
+                tts.speak(t.originalText);
+              },
             ),
-            t.originalIpa,
-          ),
-          const SizedBox(height: 12),
-          _tileRich(
-            'Traducción',
-            TapWordText(
-              text: t.translatedText,
-              targetLang: t.detectedLanguage,
-              sourceLang: targetLang,
-              ipaPerWord: t.translatedIpa,
-              wordStyle: wordStyle,
-              ipaStyle: ipaStyle,
+            const SizedBox(height: 12),
+            _tileRich(
+              context,
+              'Traducción',
+              TapWordText(
+                text: t.translatedText,
+                targetLang: t.detectedLanguage,
+                sourceLang: targetLang,
+                ipaPerWord: t.translatedIpa,
+                wordStyle: wordStyle,
+                ipaStyle: ipaStyle,
+              ),
+              onTts: () {
+                tts.changeLanguage(_ttsLocaleFor(targetLang));
+                tts.speak(t.translatedText);
+              },
             ),
-            t.translatedIpa,
-          ),
-        ],
-      );
-    },
-  );
+          ],
+        );
+      },
+    );
   }
 
   Widget _tileRich(
+    BuildContext context,
     String title,
-    Widget content,
-    List<String> unused, {
+    Widget body, {
     Color? color,
     String? errorText,
+    required VoidCallback onTts, // ← nuevo
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color ?? Colors.white,
+        color: color ?? Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xff1F1617).withAlpha(30),
-            blurRadius: 20,
-          ),
-        ],
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: Colors.black54,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              IconButton.filledTonal(
+                icon: Icon(tts.getState() ? Icons.stop : Icons.volume_up),
+                tooltip: tts.getState() ? 'Detener' : 'Escuchar',
+                onPressed: onTts,
+              ),
+            ],
           ),
           const SizedBox(height: 8),
-          if (errorText != null && errorText.isNotEmpty)
-            Text(errorText, style: const TextStyle(color: Colors.red))
-          else
-            content,
+          body,
+          if (errorText != null) ...[
+            const SizedBox(height: 8),
+            Text(errorText, style: TextStyle(color: Colors.red.shade700)),
+          ],
         ],
       ),
     );
@@ -396,27 +452,183 @@ class DiccionarioView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final box = Hive.box<String>('word_cache');
+
     return Scaffold(
       backgroundColor: Colors.pinkAccent,
-      body: wordList()
+      body: ValueListenableBuilder<Box<String>>(
+        valueListenable: box.listenable(),
+        builder: (context, b, _) {
+          final palabras = Map<String, String>.from(b.toMap());
+
+          palabras.removeWhere((key, _) {
+            final p = key.split('::');
+            return p.length != 3 || p[1] == p[2];
+          });
+
+          if (palabras.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.all(10),
+              child: Center(
+                child: Text(
+                  'Sin palabras en el diccionario',
+                  style: TextStyle(fontSize: 24),
+                ),
+              ),
+            );
+          }
+
+          final entries = palabras.entries.toList()
+            ..sort((a, b) => a.key.compareTo(b.key));
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(8),
+            itemCount: entries.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, i) {
+              final e = entries[i];
+              final parts = e.key.split('::');
+              final word = parts[0];
+              final path = '${parts[1]} -> ${parts[2]}';
+              return ListTile(
+                title: Text('$word = ${e.value}'),
+                subtitle: Text(path),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () => b.delete(e.key),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class PracticeView extends StatefulWidget {
+  const PracticeView({
+    super.key,
+    this.provider,
+    this.initialSourceLang = 'auto',
+    this.initialTargetLang = 'es',
+  });
+
+  final DataProvider? provider;
+  final String initialSourceLang;
+  final String initialTargetLang;
+
+  @override
+  State<StatefulWidget> createState() => _PracticeViewState();
+}
+
+class _PracticeViewState extends State<PracticeView> {
+  late final DataProvider provider;
+  late String sourceLang;
+  late String targetLang;
+
+  Future<Translation>? translationFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    provider = widget.provider ?? DataProvider();
+    sourceLang = widget.initialSourceLang;
+    targetLang = widget.initialTargetLang;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  void _generar() {
+    setState(() {
+      translationFuture = fetchTranslation(provider, sourceLang, targetLang);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.pinkAccent,
+      body: Column(
+        children: [
+          languageDropdown(),
+          Container(
+            margin: const EdgeInsets.only(left: 20, right: 20),
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xff1F1617).withAlpha(50),
+                  blurRadius: 40,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(onPressed: _generar, child: const Text('Generar')),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: _TranslationsArea(
+                future: translationFuture,
+                targetLang: targetLang,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget wordList() {
-    final box = Hive.box('word_cache');
-    final Map<String, String> palabras = box.toMap().cast<String, String>();
-    palabras.removeWhere((key, _) {
-      final p = key.split("::");
-      if (p.length != 3) return true;
-      return p[1] == p[2];
-    });
-
-    if(palabras.isEmpty) return const Text('Sin palabras');
-
-    return ListView(
-      children: palabras.entries.map((e) => 
-      ListTile(title: Text('${e.key.substring(0, e.key.indexOf('::'))} = ${e.value}'), subtitle: Text(e.key.substring(e.key.indexOf("::") + 2, e.key.length).replaceAll('::', ' -> ')))
-    ).toList()
+  Padding languageDropdown() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: DropdownButton<String>(
+              value: sourceLang,
+              isExpanded: true,
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => sourceLang = value);
+                }
+              },
+              itemHeight: 60,
+              items: languages.entries.map((e) {
+                return DropdownMenuItem<String>(
+                  value: e.key,
+                  child: Text(e.value),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: DropdownButton<String>(
+              value: targetLang,
+              isExpanded: true,
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    targetLang = value;
+                  });
+                }
+              },
+              items: languages.entries.where((e) => e.key != 'auto').map((e) {
+                return DropdownMenuItem<String>(
+                  value: e.key,
+                  child: Text(e.value),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

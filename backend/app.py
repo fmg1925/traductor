@@ -26,7 +26,7 @@ LANG_MAP = {
     'ko': 'ko',
 }
 
-PYTESSERACT_LANGUAGES = ["eng", "spa", "kor", "chi_sim", "chi_tra", "kor", "jpn", "jpn_vert"]
+PYTESSERACT_LANGUAGES = ["eng", "spa", "kor", "chi_sim", "chi_tra", "jpn", "jpn_vert"]
 
 PYTESSERACT_TO_LTENGINE = {
     "eng": "en",
@@ -259,7 +259,6 @@ def index():
         
     key = cache_key(sentence, originalLanguage, target)
     cached = cache.get(key)
-    print(cached)
     if cached:
         return jsonify(cached)
     
@@ -327,7 +326,6 @@ def translate():
     
     key = cache_key(sentence, source, target)
     cached = cache.get(key)
-    print(cached)
     if cached is not None:
         cached_dict = cast(dict[str, Any], cached)
         return retornar(cached_dict, 200)
@@ -368,7 +366,6 @@ def _score_ocr(text: str, data: dict, expect_cjk: bool) -> float:
 @cross_origin(origins="*", methods=["POST"])
 def ocr():
     data = request.get_json(force=True)
-    print(data)
     target = data.get("target", "en")
     img = read_image_from_request()
     psm = int(request.args.get("psm", 6))  # 6=block, 7=line, 10=single char
@@ -413,7 +410,6 @@ def ocr():
     translatedIpa = ipa_word(translated, target)
         
     resultado = build_payload(best["text"], translated, detected, target, originalIpa, translatedIpa)
-    print(resultado)
     return retornar(resultado, 200)
 
 def read_image_from_request():

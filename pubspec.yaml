@@ -42,6 +42,11 @@ dependencies:
   web: ^1.1.1
   google_fonts: ^6.3.2
   image_picker: ^1.2.0
+  flutter_tts: 3.8.5
+
+# dependency_overrides:
+#   flutter_tts:
+#     path: plugins/flutter_tts_local
 
 flutter_launcher_icons:
   android: true

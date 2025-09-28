@@ -3,7 +3,7 @@ import '../domain/providers/data_provider.dart';
 
 class WordCache {
   static DataProvider provider = DataProvider();
-  static Box get _box => Hive.box('word_cache');
+  static Box get _box => Hive.box<String>('word_cache');
   static bool translating = false;
 
   static String _makeKey(String originalWord, String origin, String target) =>
