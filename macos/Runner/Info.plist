@@ -28,5 +28,11 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Se requiere acceso a la galería para seleccionar imágenes para OCR.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We use the microphone to convert your speech to text.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>We use speech recognition to transcribe your voice.</string>
 </dict>
 </plist>

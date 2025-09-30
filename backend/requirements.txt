@@ -5,4 +5,3 @@ nltk
 flask-cors
 diskcache
 phonemizer
-pytesseract

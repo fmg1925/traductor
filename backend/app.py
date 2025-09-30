@@ -1,4 +1,3 @@
-import statistics
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from beginnergen import generate_sentence_beginner
@@ -13,8 +12,7 @@ from phonemizer import phonemize
 from phonemizer.separator import Separator
 import hashlib
 import requests
-import os, sys, shutil, subprocess, re, io, base64
-import pytesseract
+import os, sys, io, base64
 from PIL import Image
 
 EN = "en"
@@ -25,69 +23,6 @@ LANG_MAP = {
     'zh': 'cmn-latn-pinyin',
     'ko': 'ko',
 }
-
-PYTESSERACT_LANGUAGES = ["eng", "spa", "kor", "chi_sim", "chi_tra", "jpn", "jpn_vert"]
-
-PYTESSERACT_TO_LTENGINE = {
-    "eng": "en",
-    "spa": "es",
-    "kor": "ko",
-    "chi_sim": "zh",
-    "chi_tra": "zh",
-    "jpn": "ja",
-    "jpn_vert": "ja",
-}
-
-_CJK_RE = re.compile(r"[\u3040-\u30FF\u4E00-\u9FFF\u3400-\u4DBF\uAC00-\uD7AF]")
-
-def _configure_tesseract_windows() -> None:
-    if sys.platform != "win32":
-        return
-
-    cmd = getattr(pytesseract.pytesseract, "tesseract_cmd", None)
-    if cmd and os.path.isfile(cmd):
-        pass
-    else:
-        cmd = shutil.which("tesseract.exe")
-
-        common = [
-            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
-        ]
-        if not cmd:
-            for p in common:
-                if os.path.isfile(p):
-                    cmd = p
-                    break
-
-        if not cmd or not os.path.isfile(cmd):
-            raise RuntimeError('tesseract.exe no encontrado')
-
-        pytesseract.pytesseract.tesseract_cmd = cmd
-
-    tessdata = os.environ.get("TESSDATA_PREFIX")
-    if not tessdata:
-        base = os.path.dirname(cmd)
-        guess = os.path.join(base, "tessdata")
-        if os.path.isdir(guess):
-            os.environ["TESSDATA_PREFIX"] = guess
-
-    print("[OCR] tesseract_cmd =", pytesseract.pytesseract.tesseract_cmd)
-    print("[OCR] TESSDATA_PREFIX =", os.environ.get("TESSDATA_PREFIX"))
-
-    try:
-        out = subprocess.check_output([pytesseract.pytesseract.tesseract_cmd, "--version"], text=True)
-        print("[OCR] Tesseract version OK:\n", out.splitlines()[0])
-    except Exception as e:
-        raise RuntimeError(f"No se pudo ejecutar tesseract.exe: {e}")
-
-_configure_tesseract_windows()
-
-try:
-    INSTALLED_LANGS = set(pytesseract.get_languages(config=""))
-except Exception as e:
-    print("[OCR] get_languages() falló, usaré fallback 'eng'. Detalle:", e)
-    INSTALLED_LANGS = {"eng"}
 
 load_dotenv()
 URI = os.getenv("LIBRETRANSLATE_URI", "").rstrip("/")
@@ -346,41 +281,25 @@ def translate():
     cache.set(key, resultado)
     return retornar(resultado, 200)
 
-def _score_ocr(text: str, data: dict, expect_cjk: bool) -> float:
-    confs = []
-    for c in data.get("conf", []):
-        try:
-            v = float(c)
-            if v >= 0:
-                confs.append(v)
-        except:
-            pass
-    mean_conf = statistics.mean(confs) if confs else 0.0
-    words = sum(1 for t in data.get("text", []) if t and str(t).strip())
-    chars = len("".join(str(text).split()))
-    cjk_ratio = len(_CJK_RE.findall(text)) / max(1, len(text))
-    bonus = (cjk_ratio * 10.0) if expect_cjk else ((1.0 - cjk_ratio) * 5.0)
-    return (2.2 * mean_conf) + words + (min(chars, 120) / 8.0) + bonus
-
 @app.route("/ocr", methods=["POST"])
 @cross_origin(origins="*", methods=["POST"])
 def ocr():
     data = request.get_json(force=True)
     target = data.get("target", "en")
     img = read_image_from_request()
-    psm = int(request.args.get("psm", 6))  # 6=block, 7=line, 10=single char
-    base_cfg = f"--oem 1 --dpi 300 --psm {psm}"
+    psm = int(request.args.get("psm", 6))
+    base_cfg = f"--oem 1 --psm {psm} -c preserve_interword_spaces=1"
 
     best = {"lang": None, "text": "", "score": -1.0}
     tried = []
 
-    langs = PYTESSERACT_LANGUAGES
+    # langs = PYTESSERACT_LANGUAGES
     for lang in langs:
         expect_cjk = lang in ("jpn", "kor", "chi_sim", "chi_tra")
         try:
             txt = pytesseract.image_to_string(img, lang=lang, config=base_cfg).strip()
             data = pytesseract.image_to_data(img, lang=lang, config=base_cfg, output_type=pytesseract.Output.DICT)
-            score = _score_ocr(txt, data, expect_cjk)
+            # score = _score_ocr(txt, data, expect_cjk)
         except Exception as e:
             txt, score = "", -1.0
 
@@ -391,7 +310,7 @@ def ocr():
         if best["score"] >= 200 and len(best["text"]) >= (1 if psm == 10 else 3):
             break
         
-    idioma = PYTESSERACT_TO_LTENGINE[best['lang']]
+    # idioma = PYTESSERACT_TO_LTENGINE[best['lang']]
     
     if not best["text"]:
         payload = build_payload(error="No characters detected in image")
@@ -415,15 +334,17 @@ def ocr():
 def read_image_from_request():
     f = request.files.get('file')
     if f:
-        return Image.open(f.stream).convert("RGB")
-    
-    data = request.get_json(silent=True) or {}
-    b64 = data.get('image_b64')
-    if b64:
-        if ',' in b64 and b64.strip().startswith('data:'):
+        img = Image.open(f.stream)
+    else:
+        data = request.get_json(silent=True) or {}
+        b64 = data.get('image_b64')
+        if not b64:
+            raise ValueError("No hay 'file' ni 'image_b64'")
+        if b64.strip().startswith('data:') and ',' in b64:
             b64 = b64.split(',', 1)[1]
-        raw = base64.b64decode(b64)
-        return Image.open(io.BytesIO(raw)).convert("RGB");
+        img = Image.open(io.BytesIO(base64.b64decode(b64)))
+    
+    return img
 
 if __name__ == "__main__":
     app.run(debug=True, port=3000, threaded=True)
