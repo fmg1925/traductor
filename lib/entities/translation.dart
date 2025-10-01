@@ -19,7 +19,7 @@ class Translation {
     return Translation(
       originalText: (json['originalText'] ?? '') as String,
       translatedText: (json['translatedText'] ?? '') as String,
-      detectedLanguage: (json['detectedLanguage'] ?? '') as String,
+      detectedLanguage: ((json['detectedLanguage'] ?? '') as String).substring(0, 2),
       target: (json['target'] ?? '') as String,
       originalIpa: List<String>.from(json['originalIpa'] ?? []),
       translatedIpa: List<String>.from(json['translatedIpa'] ?? []),
@@ -30,7 +30,7 @@ class Translation {
   Map<String, dynamic> toJson() => {
     'originalText': originalText,
     'translatedText': translatedText,
-    'detectedLanguage': detectedLanguage,
+    'detectedLanguage': detectedLanguage.substring(0, 2),
     'target': target,
     'originalIpa': originalIpa,
     'translatedIpa': translatedIpa,

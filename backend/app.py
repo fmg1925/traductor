@@ -10,10 +10,10 @@ from typing import Any, Tuple, cast, List
 from diskcache import Cache
 from phonemizer import phonemize
 from phonemizer.separator import Separator
-import hashlib
-import requests
-import os, sys, io, base64
-from PIL import Image
+import hashlib, requests, os, sys, io, base64, numpy as np
+from PIL import Image, ImageOps
+from paddleocr import PaddleOCR
+from pypinyin import lazy_pinyin, Style
 
 EN = "en"
 
@@ -24,13 +24,17 @@ LANG_MAP = {
     'ko': 'ko',
 }
 
+MAX_LONG_SIDE = 2000
+
 load_dotenv()
 URI = os.getenv("LIBRETRANSLATE_URI", "").rstrip("/")
 REQUEST_TIMEOUT = float(os.getenv("LT_TIMEOUT", "20"))
 MAX_WORKERS = int(os.getenv("LT_MAX_WORKERS", "8"))
-    
-ESPEAK_DIR = os.getenv("PHONEMIZER_ESPEAK_DIR", r"C:\Program Files\eSpeak NG")
+
+ocrInstance = PaddleOCR()
+
 if sys.platform == "win32":
+    ESPEAK_DIR = os.getenv("PHONEMIZER_ESPEAK_DIR", r"C:\Program Files\eSpeak NG")
     ESPEAK_DLL = os.path.join(ESPEAK_DIR, "libespeak-ng.dll")
     os.environ.setdefault("PHONEMIZER_ESPEAK_LIBRARY", ESPEAK_DLL)
 
@@ -155,6 +159,19 @@ def ipa_word(sentence: str, lang_code: str) -> list[str]:
     if not lang:
         return []
     
+    print(lang)
+    
+    if lang == 'zh' or lang == 'cmn-latn-pinyin':
+        try:
+            parts = sentence.split()
+            if parts:
+                return [' '.join(lazy_pinyin(w, style=Style.TONE)).strip() for w in parts if w]
+            # no spaces: pinyin per char, joined with spaces
+            return [' '.join(lazy_pinyin(sentence, style=Style.TONE)).strip()]
+        except Exception:
+            # fallback to IPA path below if pypinyin isn't available
+            pass
+    
     words = sentence.split()
     if not words:
         return []
@@ -259,6 +276,11 @@ def translate():
     source = data.get("source", "auto")
     target = data.get("target", "es")
     
+    if source == target:
+        ipa = ipa_word(sentence, source if source != 'auto' else target)
+        resultado = build_payload(sentence, sentence, source, target, ipa, ipa)
+        return retornar(resultado, 200)
+    
     key = cache_key(sentence, source, target)
     cached = cache.get(key)
     if cached is not None:
@@ -287,48 +309,25 @@ def ocr():
     data = request.get_json(force=True)
     target = data.get("target", "en")
     img = read_image_from_request()
-    psm = int(request.args.get("psm", 6))
-    base_cfg = f"--oem 1 --psm {psm} -c preserve_interword_spaces=1"
-
-    best = {"lang": None, "text": "", "score": -1.0}
-    tried = []
-
-    # langs = PYTESSERACT_LANGUAGES
-    for lang in langs:
-        expect_cjk = lang in ("jpn", "kor", "chi_sim", "chi_tra")
-        try:
-            txt = pytesseract.image_to_string(img, lang=lang, config=base_cfg).strip()
-            data = pytesseract.image_to_data(img, lang=lang, config=base_cfg, output_type=pytesseract.Output.DICT)
-            # score = _score_ocr(txt, data, expect_cjk)
-        except Exception as e:
-            txt, score = "", -1.0
-
-        tried.append({"lang": lang, "score": round(score, 2), "preview": txt[:16]})
-        if score > best["score"]:
-            best.update({"lang": lang, "text": txt, "score": score})
-
-        if best["score"] >= 200 and len(best["text"]) >= (1 if psm == 10 else 3):
-            break
-        
-    # idioma = PYTESSERACT_TO_LTENGINE[best['lang']]
     
-    if not best["text"]:
-        payload = build_payload(error="No characters detected in image")
-        return retornar(payload, 400)
-        
-    payload = {"q": best["text"], "source": idioma, "target": target, "format": "text"}
+    result = ocrInstance.predict(input=img)
+    
+    texts = result[0]['rec_texts']
+    
+    ocrString = " ".join(texts)
+    
+    payload = {"q": ocrString, "source": "auto", "target": target, "format": "text"}
     r = session.post(f"{URI}/translate", json=payload, timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     data = r.json()
     translated = data.get("translatedText")
     detected = data.get("detectedLanguage", {}).get("language")
-    if not detected:
-        detected = idioma
-        
-    originalIpa = ipa_word(best["text"], detected)
+    
+    originalIpa = ipa_word(ocrString, detected)
     translatedIpa = ipa_word(translated, target)
         
-    resultado = build_payload(best["text"], translated, detected, target, originalIpa, translatedIpa)
+    resultado = build_payload(ocrString, translated, detected, target, originalIpa, translatedIpa)
+        
     return retornar(resultado, 200)
 
 def read_image_from_request():
@@ -344,7 +343,27 @@ def read_image_from_request():
             b64 = b64.split(',', 1)[1]
         img = Image.open(io.BytesIO(base64.b64decode(b64)))
     
-    return img
+    img = ImageOps.exif_transpose(img)
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+        
+    w, h = img.size
+    long_side = max(w, h)
+    if long_side > MAX_LONG_SIDE:
+        scale = MAX_LONG_SIDE / float(long_side)
+        img = img.resize((int(w * scale), int(h * scale)), Image.Resampling.LANCZOS)
+
+    arr = np.array(img, dtype=np.uint8)
+
+    # Hard-guard shape to HxWx3
+    if arr.ndim == 2:
+        arr = np.stack([arr, arr, arr], axis=-1)
+    elif arr.ndim == 3 and arr.shape[2] == 4:
+        arr = arr[..., :3]
+    elif arr.ndim != 3 or arr.shape[2] != 3:
+        raise ValueError(f"Unexpected image shape {arr.shape}; expected HxWx3.")
+
+    return arr
 
 if __name__ == "__main__":
     app.run(debug=True, port=3000, threaded=True)

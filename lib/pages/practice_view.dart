@@ -97,7 +97,7 @@ class _PracticeViewState extends State<PracticeView> {
                 }
               },
               itemHeight: 60,
-              items: languages.entries.map((e) {
+              items: languages(context).entries.map((e) {
                 return DropdownMenuItem<String>(
                   value: e.key,
                   child: Text(e.value),
@@ -117,7 +117,7 @@ class _PracticeViewState extends State<PracticeView> {
                   });
                 }
               },
-              items: languages.entries.where((e) => e.key != 'auto').map((e) {
+              items: languages(context).entries.where((e) => e.key != 'auto').map((e) {
                 return DropdownMenuItem<String>(
                   value: e.key,
                   child: Text(e.value),

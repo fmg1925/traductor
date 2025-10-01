@@ -58,9 +58,10 @@ Future<Translation> fetchTranslationFor(DataProvider provider, String text, Stri
     final decoded = jsonDecode(bodyText);
     final translated = decoded['translatedText'] as String? ?? '';
     final dl = decoded['detectedLanguage'];
-    final detectedLanguage = dl is Map
+    String detectedLanguage = dl is Map
     ? (dl['language'] as String? ?? '')
     : (dl as String? ?? '');
+    detectedLanguage = detectedLanguage.substring(0, 2);
     final originalIpa = (decoded['originalIpa'] as List<dynamic>? ?? [])
     .map((e) => e.toString())
     .toList();
