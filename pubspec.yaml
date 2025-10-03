@@ -48,6 +48,7 @@ dependencies:
   image_picker: ^1.2.0
   flutter_tts: 3.8.5
   speech_to_text: ^7.3.0
+  universal_io: ^2.2.2
 
 # dependency_overrides:
 #   flutter_tts:

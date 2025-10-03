@@ -8,11 +8,11 @@ import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
-  await Hive.openBox<String>('word_cache');
-  await Hive.openBox<String>('prefs');
+  await Hive.initFlutter(); // Iniciar persistencia
+  await Hive.openBox<String>('word_cache'); // Diccionario
+  await Hive.openBox<String>('prefs'); // Idioma
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    setWebTitle("Trilingo");
+    setWebTitle("Trilingo"); // Forzar título en web, default es ip:puerto
   });
   runApp(MyApp());
 }
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
 
   final Box prefs = Hive.box<String>('prefs');
 
-  Locale _parseLocaleTag(String tag) {
+  Locale _parseLocaleTag(String tag) { // Convertir idiomas xx-XX a xx
     final parts = tag.split(RegExp(r'[-_]'));
     if (parts.length == 1) return Locale(parts[0]);
     if (parts.length == 2) return Locale(parts[0], parts[1]);
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
     );
   }
 
-    @override
+  @override
   Widget build(BuildContext context) {
     final box = Hive.box<String>('prefs');
     return ValueListenableBuilder<Box<String>>(
@@ -45,7 +45,11 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           locale: loc,
           supportedLocales: const [
-            Locale('en'), Locale('es'), Locale('zh'), Locale('ja'), Locale('ko'),
+            Locale('en'),
+            Locale('es'),
+            Locale('zh'),
+            Locale('ja'),
+            Locale('ko'),
           ],
           localizationsDelegates: const [
             AppLocalizations.delegate,
@@ -61,19 +65,20 @@ class MyApp extends StatelessWidget {
   }
 }
 
-final ipaStyle = GoogleFonts.notoSans(
+final ipaStyle = GoogleFonts.notoSans( // Estilo para alfabeto fonético
   fontSize: 13,
   height: 1.15,
   color: const Color(0xFF424242),
+  textStyle: const TextStyle(overflow: TextOverflow.visible),
 );
 
-final wordStyle = const TextStyle(
+final wordStyle = const TextStyle( // Estilo para letras en general
   fontSize: 16,
   height: 1.15,
   color: Colors.black87,
 );
 
-extension L10nX on BuildContext {
+extension L10nX on BuildContext { // Para recargar idioma en ejecución
   AppLocalizations get l10n => AppLocalizations.of(this);
 }
 
@@ -94,7 +99,7 @@ Map<String, String> locales(BuildContext ctx) => {
   'ko': ctx.l10n.ko,
 };
 
-String ttsLocaleFor(String code) {
+String ttsLocaleFor(String code) { // Convertir locales a compatibles con TTS
   switch (code) {
     case 'es':
       return 'es-ES';

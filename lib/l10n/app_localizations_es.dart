@@ -15,13 +15,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get error_tts => 'Error al inicializar TTS';
 
   @override
-  String get error_ocr => 'Error al procesar el OCR';
+  String get error_ocr => 'Error al procesar OCR';
 
   @override
-  String get error_translation => 'Ocurrió un error al traducir';
+  String error_translation(Object log) {
+    return 'Ocurrió un error al traducir, registro del error: $log';
+  }
 
   @override
-  String get main_hint => 'Escribe algo o presiona \"Generar\"...';
+  String get main_hint => 'Escribe algo o pulsa \"Generar\"...';
 
   @override
   String get start => 'Iniciar';
@@ -76,4 +78,49 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get ko => 'Coreano';
+
+  @override
+  String get generate => 'Generar';
+
+  @override
+  String get detected_words => 'Palabras detectadas:';
+
+  @override
+  String get tap_to_stop => 'Toca para detener';
+
+  @override
+  String get repeat_this_phrase => 'Repite esta frase:';
+
+  @override
+  String error_function(Object fn, Object msg) {
+    return 'Error en la función $fn. Informa a los desarrolladores: $msg';
+  }
+
+  @override
+  String get listening => 'Escuchando';
+
+  @override
+  String error_stt(Object msg) {
+    return 'Error al procesar Voz a Texto: $msg';
+  }
+
+  @override
+  String get accuracy => 'Precisión';
+
+  @override
+  String get feature_not_available => 'Función no disponible';
+
+  @override
+  String get feature_not_available_windows =>
+      'Esta función no está disponible en Windows';
+
+  @override
+  String missing_language(Object lang) {
+    return 'Falta el paquete de voz del idioma: $lang';
+  }
+
+  @override
+  String language_not_installed(Object lang) {
+    return 'No tienes instalado el paquete de voz del idioma $lang';
+  }
 }

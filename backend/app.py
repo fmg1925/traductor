@@ -159,8 +159,6 @@ def ipa_word(sentence: str, lang_code: str) -> list[str]:
     if not lang:
         return []
     
-    print(lang)
-    
     if lang == 'zh' or lang == 'cmn-latn-pinyin':
         try:
             parts = sentence.split()

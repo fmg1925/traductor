@@ -19,11 +19,10 @@ class Translation {
     return Translation(
       originalText: (json['originalText'] ?? '') as String,
       translatedText: (json['translatedText'] ?? '') as String,
-      detectedLanguage: ((json['detectedLanguage'] ?? '') as String).substring(0, 2),
+      detectedLanguage: ((json['detectedLanguage'] ?? '') as String).substring(0, 2), // Cortar idioma detectado a 2 caracteres (inconsistencias en zh)
       target: (json['target'] ?? '') as String,
       originalIpa: List<String>.from(json['originalIpa'] ?? []),
       translatedIpa: List<String>.from(json['translatedIpa'] ?? []),
-
     );
   }
 

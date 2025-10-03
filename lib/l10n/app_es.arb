@@ -2,9 +2,14 @@
   "@@locale": "es",
   "error": "Error",
   "error_tts": "Error al inicializar TTS",
-  "error_ocr": "Error al procesar el OCR",
-  "error_translation": "Ocurrió un error al traducir",
-  "main_hint": "Escribe algo o presiona \"Generar\"...",
+  "error_ocr": "Error al procesar OCR",
+  "error_translation": "Ocurrió un error al traducir, registro del error: {log}",
+  "@error_translation": {
+    "placeholders": {
+      "log": {}
+    }
+  },
+  "main_hint": "Escribe algo o pulsa \"Generar\"...",
   "start": "Iniciar",
   "stop": "Detener",
   "listen": "Escuchar",
@@ -22,5 +27,38 @@
   "es": "Español",
   "zh": "Chino",
   "ja": "Japonés",
-  "ko": "Coreano"
+  "ko": "Coreano",
+  "generate": "Generar",
+  "detected_words": "Palabras detectadas:",
+  "tap_to_stop": "Toca para detener",
+  "repeat_this_phrase": "Repite esta frase:",
+  "error_function": "Error en la función {fn}. Informa a los desarrolladores: {msg}",
+  "@error_function": {
+    "placeholders": {
+      "fn": {},
+      "msg": {}
+    }
+  },
+  "listening": "Escuchando",
+  "error_stt": "Error al procesar Voz a Texto: {msg}",
+  "@error_stt": {
+    "placeholders": {
+      "msg": {}
+    }
+  },
+  "accuracy": "Precisión",
+  "feature_not_available": "Función no disponible",
+  "feature_not_available_windows": "Esta función no está disponible en Windows",
+  "missing_language": "Falta el paquete de voz del idioma: {lang}",
+  "@missing_language": {
+    "placeholders": {
+      "lang": {}
+    }
+  },
+  "language_not_installed": "No tienes instalado el paquete de voz del idioma {lang}",
+  "@language_not_installed": {
+    "placeholders": {
+      "lang": {}
+    }
+  }
 }

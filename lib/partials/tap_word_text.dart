@@ -169,7 +169,7 @@ class _TapWordTextState extends State<TapWordText> {
             Text(tk, style: wordStyle, textAlign: TextAlign.center),
             SizedBox(height: widget.gap),
             if (ipaForThisWord.isNotEmpty)
-              Text(ipaForThisWord, style: ipaStyle, textAlign: TextAlign.center),
+              Text(ipaForThisWord, style: ipaStyle, textAlign: TextAlign.center, softWrap: false, maxLines: 1, overflow: TextOverflow.visible),
           ],
         );
 

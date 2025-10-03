@@ -125,8 +125,8 @@ abstract class AppLocalizations {
   /// No description provided for @error_translation.
   ///
   /// In en, this message translates to:
-  /// **'An error occurred while translating'**
-  String get error_translation;
+  /// **'An error occurred while translating, error log: {log}'**
+  String error_translation(Object log);
 
   /// No description provided for @main_hint.
   ///
@@ -241,6 +241,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Korean'**
   String get ko;
+
+  /// No description provided for @generate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate'**
+  String get generate;
+
+  /// No description provided for @detected_words.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected words:'**
+  String get detected_words;
+
+  /// No description provided for @tap_to_stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to stop'**
+  String get tap_to_stop;
+
+  /// No description provided for @repeat_this_phrase.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat this phrase:'**
+  String get repeat_this_phrase;
+
+  /// No description provided for @error_function.
+  ///
+  /// In en, this message translates to:
+  /// **'Error in function {fn} please report this to the developers: {msg}'**
+  String error_function(Object fn, Object msg);
+
+  /// No description provided for @listening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get listening;
+
+  /// No description provided for @error_stt.
+  ///
+  /// In en, this message translates to:
+  /// **'Error processing Speech To Text: {msg}'**
+  String error_stt(Object msg);
+
+  /// No description provided for @accuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Accuracy'**
+  String get accuracy;
+
+  /// No description provided for @feature_not_available.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature not available'**
+  String get feature_not_available;
+
+  /// No description provided for @feature_not_available_windows.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature is not available on Windows'**
+  String get feature_not_available_windows;
+
+  /// No description provided for @missing_language.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing language voice pack: {lang}'**
+  String missing_language(Object lang);
+
+  /// No description provided for @language_not_installed.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have the {lang} language voice pack installed'**
+  String language_not_installed(Object lang);
 }
 
 class _AppLocalizationsDelegate

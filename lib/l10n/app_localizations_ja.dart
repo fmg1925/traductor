@@ -12,16 +12,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get error => 'エラー';
 
   @override
-  String get error_tts => 'TTS の初期化中にエラーが発生しました';
+  String get error_tts => 'TTS の初期化エラー';
 
   @override
-  String get error_ocr => 'OCR の処理中にエラーが発生しました';
+  String get error_ocr => 'OCR の処理エラー';
 
   @override
-  String get error_translation => '翻訳中にエラーが発生しました';
+  String error_translation(Object log) {
+    return '翻訳中にエラーが発生しました。エラーログ: $log';
+  }
 
   @override
-  String get main_hint => 'テキストを入力するか「生成」を押してください...';
+  String get main_hint => '何か入力するか「生成」を押してください…';
 
   @override
   String get start => '開始';
@@ -30,7 +32,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get stop => '停止';
 
   @override
-  String get listen => '聴く';
+  String get listen => 'リッスン';
 
   @override
   String get generate_translation => '翻訳を生成';
@@ -39,7 +41,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get translate => '翻訳';
 
   @override
-  String get translation => '翻訳';
+  String get translation => '訳文';
 
   @override
   String get original => '原文';
@@ -51,7 +53,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get dictionary => '辞書';
 
   @override
-  String get no_words => '辞書に単語が保存されていません';
+  String get no_words => '辞書に保存された単語はありません';
 
   @override
   String get auto => '自動検出';
@@ -76,4 +78,48 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get ko => '韓国語';
+
+  @override
+  String get generate => '生成';
+
+  @override
+  String get detected_words => '検出された単語：';
+
+  @override
+  String get tap_to_stop => 'タップして停止';
+
+  @override
+  String get repeat_this_phrase => '次のフレーズを復唱してください：';
+
+  @override
+  String error_function(Object fn, Object msg) {
+    return '関数 $fn でエラーが発生しました。開発者に報告してください: $msg';
+  }
+
+  @override
+  String get listening => '聴取中';
+
+  @override
+  String error_stt(Object msg) {
+    return '音声認識の処理中にエラーが発生しました: $msg';
+  }
+
+  @override
+  String get accuracy => '正確度';
+
+  @override
+  String get feature_not_available => '機能は利用できません';
+
+  @override
+  String get feature_not_available_windows => 'この機能は Windows では利用できません';
+
+  @override
+  String missing_language(Object lang) {
+    return '言語の音声パックがありません：$lang';
+  }
+
+  @override
+  String language_not_installed(Object lang) {
+    return '$lang の音声パックがインストールされていません';
+  }
 }

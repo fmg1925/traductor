@@ -12,22 +12,24 @@ class AppLocalizationsKo extends AppLocalizations {
   String get error => '오류';
 
   @override
-  String get error_tts => 'TTS 초기화 중 오류가 발생했습니다';
+  String get error_tts => 'TTS 초기화 오류';
 
   @override
-  String get error_ocr => 'OCR 처리 중 오류가 발생했습니다';
+  String get error_ocr => 'OCR 처리 오류';
 
   @override
-  String get error_translation => '번역 중 오류가 발생했습니다';
+  String error_translation(Object log) {
+    return '번역 중 오류가 발생했습니다. 오류 로그: $log';
+  }
 
   @override
-  String get main_hint => '텍스트를 입력하거나 \"생성\"을 누르세요...';
+  String get main_hint => '무엇인가 입력하거나 \"생성\"을 누르세요...';
 
   @override
   String get start => '시작';
 
   @override
-  String get stop => '중지';
+  String get stop => '정지';
 
   @override
   String get listen => '듣기';
@@ -39,7 +41,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get translate => '번역';
 
   @override
-  String get translation => '번역';
+  String get translation => '번역문';
 
   @override
   String get original => '원문';
@@ -76,4 +78,48 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get ko => '한국어';
+
+  @override
+  String get generate => '생성';
+
+  @override
+  String get detected_words => '감지된 단어:';
+
+  @override
+  String get tap_to_stop => '탭하여 정지';
+
+  @override
+  String get repeat_this_phrase => '다음 문장을 따라 말하세요:';
+
+  @override
+  String error_function(Object fn, Object msg) {
+    return '함수 $fn 에서 오류가 발생했습니다. 개발자에게 보고하세요: $msg';
+  }
+
+  @override
+  String get listening => '청취 중';
+
+  @override
+  String error_stt(Object msg) {
+    return '음성 인식(STT) 처리 중 오류: $msg';
+  }
+
+  @override
+  String get accuracy => '정확도';
+
+  @override
+  String get feature_not_available => '기능을 사용할 수 없습니다';
+
+  @override
+  String get feature_not_available_windows => '이 기능은 Windows에서 사용할 수 없습니다';
+
+  @override
+  String missing_language(Object lang) {
+    return '언어 음성 팩이 없습니다: $lang';
+  }
+
+  @override
+  String language_not_installed(Object lang) {
+    return '$lang 언어 음성 팩이 설치되지 않았습니다';
+  }
 }

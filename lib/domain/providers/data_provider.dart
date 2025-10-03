@@ -8,11 +8,11 @@ class DataProvider {
   final Uri uri = kIsWeb
     ? Uri.parse('http://localhost:3000')
     : Platform.isAndroid
-    ? Uri.parse('http://10.0.2.2:3000')
+    ? Uri.parse('http://10.0.2.2:3000') // Para emulador de Android
     : Uri.parse('http://localhost:3000');
 }
 
-Future<Translation> fetchTranslation(
+Future<Translation> fetchTranslation( // Pedir frase y traducción
   DataProvider provider,
   String originalLanguage,
   String target,
@@ -41,7 +41,7 @@ Future<Translation> fetchTranslation(
     }
 } 
 
-Future<Translation> fetchTranslationFor(DataProvider provider, String text, String source, String target) async {
+Future<Translation> fetchTranslationFor(DataProvider provider, String text, String source, String target) async { // Pedir traducción de frase específica
   final response = await http.post(
     Uri.parse('${provider.uri}/translate'),
     headers: const {'Content-Type': 'application/json', 'Accept': 'application/json'},
@@ -81,11 +81,11 @@ Future<Translation> fetchTranslationFor(DataProvider provider, String text, Stri
   }
 }
 
-Future<String> translateWord({
+Future<String> translateWord({ // Traducir palabra
   required DataProvider provider,
   required String word,
   required String target,
-  String source = 'auto'
+  required String source,
 }) async {
   final res = await http.post(
     Uri.parse('${provider.uri}/translate'),
@@ -99,7 +99,7 @@ Future<String> translateWord({
   return (m['translatedText'] as String?) ?? '';
 }
 
-Future<String> ocr({
+Future<String> ocr({ // Reconocimiento de texto
   required DataProvider provider,
   required File imageFile,
   required String target,

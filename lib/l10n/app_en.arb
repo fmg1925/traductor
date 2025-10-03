@@ -3,7 +3,12 @@
   "error": "Error",
   "error_tts": "Error initializing TTS",
   "error_ocr": "Error processing OCR",
-  "error_translation": "An error occurred while translating",
+  "error_translation": "An error occurred while translating, error log: {log}",
+  "@error_translation": {
+    "placeholders": {
+      "log": {}
+    }
+  },
   "main_hint": "Write something or press \"Generate\"...",
   "start": "Start",
   "stop": "Stop",
@@ -22,5 +27,38 @@
   "es": "Spanish",
   "zh": "Chinese",
   "ja": "Japanese",
-  "ko": "Korean"
+  "ko": "Korean",
+  "generate": "Generate",
+  "detected_words": "Detected words:",
+  "tap_to_stop": "Tap to stop",
+  "repeat_this_phrase": "Repeat this phrase:",
+  "error_function": "Error in function {fn} please report this to the developers: {msg}",
+  "@error_function": {
+    "placeholders": {
+      "fn": {},
+      "msg": {}
+    }
+  },
+  "listening": "Listening",
+  "error_stt": "Error processing Speech To Text: {msg}",
+  "@error_stt": {
+    "placeholders": {
+      "msg": {}
+    }
+  },
+  "accuracy": "Accuracy",
+  "feature_not_available": "Feature not available",
+  "feature_not_available_windows": "This feature is not available on Windows",
+  "missing_language": "Missing language voice pack: {lang}",
+  "@missing_language": {
+    "placeholders": {
+      "lang": {}
+    }
+  },
+  "language_not_installed": "You do not have the {lang} language voice pack installed",
+  "@language_not_installed": {
+    "placeholders": {
+      "lang": {}
+    }
+  }
 }

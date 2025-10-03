@@ -18,7 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get error_ocr => 'Error processing OCR';
 
   @override
-  String get error_translation => 'An error occurred while translating';
+  String error_translation(Object log) {
+    return 'An error occurred while translating, error log: $log';
+  }
 
   @override
   String get main_hint => 'Write something or press \"Generate\"...';
@@ -76,4 +78,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ko => 'Korean';
+
+  @override
+  String get generate => 'Generate';
+
+  @override
+  String get detected_words => 'Detected words:';
+
+  @override
+  String get tap_to_stop => 'Tap to stop';
+
+  @override
+  String get repeat_this_phrase => 'Repeat this phrase:';
+
+  @override
+  String error_function(Object fn, Object msg) {
+    return 'Error in function $fn please report this to the developers: $msg';
+  }
+
+  @override
+  String get listening => 'Listening';
+
+  @override
+  String error_stt(Object msg) {
+    return 'Error processing Speech To Text: $msg';
+  }
+
+  @override
+  String get accuracy => 'Accuracy';
+
+  @override
+  String get feature_not_available => 'Feature not available';
+
+  @override
+  String get feature_not_available_windows =>
+      'This feature is not available on Windows';
+
+  @override
+  String missing_language(Object lang) {
+    return 'Missing language voice pack: $lang';
+  }
+
+  @override
+  String language_not_installed(Object lang) {
+    return 'You do not have the $lang language voice pack installed';
+  }
 }

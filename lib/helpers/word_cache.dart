@@ -27,7 +27,7 @@ class WordCache {
       return word;
     }
 
-    final resultado = translateWord(provider: provider, word: word, target: target)
+    final resultado = translateWord(provider: provider, word: word, source: origin, target: target)
     .then((resultado) async {
       await _box.put(key, resultado);
       return resultado;

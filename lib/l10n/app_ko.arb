@@ -1,16 +1,21 @@
 {
   "@@locale": "ko",
   "error": "오류",
-  "error_tts": "TTS 초기화 중 오류가 발생했습니다",
-  "error_ocr": "OCR 처리 중 오류가 발생했습니다",
-  "error_translation": "번역 중 오류가 발생했습니다",
-  "main_hint": "텍스트를 입력하거나 \"생성\"을 누르세요...",
+  "error_tts": "TTS 초기화 오류",
+  "error_ocr": "OCR 처리 오류",
+  "error_translation": "번역 중 오류가 발생했습니다. 오류 로그: {log}",
+  "@error_translation": {
+    "placeholders": {
+      "log": {}
+    }
+  },
+  "main_hint": "무엇인가 입력하거나 \"생성\"을 누르세요...",
   "start": "시작",
-  "stop": "중지",
+  "stop": "정지",
   "listen": "듣기",
   "generate_translation": "번역 생성",
   "translate": "번역",
-  "translation": "번역",
+  "translation": "번역문",
   "original": "원문",
   "practice": "연습",
   "dictionary": "사전",
@@ -22,5 +27,38 @@
   "es": "스페인어",
   "zh": "중국어",
   "ja": "일본어",
-  "ko": "한국어"
+  "ko": "한국어",
+  "generate": "생성",
+  "detected_words": "감지된 단어:",
+  "tap_to_stop": "탭하여 정지",
+  "repeat_this_phrase": "다음 문장을 따라 말하세요:",
+  "error_function": "함수 {fn} 에서 오류가 발생했습니다. 개발자에게 보고하세요: {msg}",
+  "@error_function": {
+    "placeholders": {
+      "fn": {},
+      "msg": {}
+    }
+  },
+  "listening": "청취 중",
+  "error_stt": "음성 인식(STT) 처리 중 오류: {msg}",
+  "@error_stt": {
+    "placeholders": {
+      "msg": {}
+    }
+  },
+  "accuracy": "정확도",
+  "feature_not_available": "기능을 사용할 수 없습니다",
+  "feature_not_available_windows": "이 기능은 Windows에서 사용할 수 없습니다",
+  "missing_language": "언어 음성 팩이 없습니다: {lang}",
+  "@missing_language": {
+    "placeholders": {
+      "lang": {}
+    }
+  },
+  "language_not_installed": "{lang} 언어 음성 팩이 설치되지 않았습니다",
+  "@language_not_installed": {
+    "placeholders": {
+      "lang": {}
+    }
+  }
 }

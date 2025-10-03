@@ -27,9 +27,10 @@ Future<Translation> ocrFromBytes({
     final originalText = decoded['originalText'] as String? ?? '';
     final translated = decoded['translatedText'] as String? ?? '';
     final dl = decoded['detectedLanguage'];
-    final detectedLanguage = dl is Map
+    String detectedLanguage = dl is Map
         ? (dl['language'] as String? ?? '')
         : (dl as String? ?? '');
+    detectedLanguage = detectedLanguage.substring(0, 2); // Recortar idioma a 2 caracteres
     final originalIpa = (decoded['originalIpa'] as List<dynamic>? ?? [])
         .map((e) => e.toString())
         .toList();

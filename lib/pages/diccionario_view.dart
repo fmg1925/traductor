@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../l10n/app_localizations.dart';
 
 class DiccionarioView extends StatelessWidget {
   const DiccionarioView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final box = Hive.box<String>('word_cache');
-
+    final box = Hive.box<String>('word_cache'); // Caché local (diccionario)
+    final t = AppLocalizations.of(context); // Traducciones
     return Scaffold(
       backgroundColor: Colors.pinkAccent,
       body: ValueListenableBuilder<Box<String>>(
@@ -21,11 +22,11 @@ class DiccionarioView extends StatelessWidget {
           });
 
           if (palabras.isEmpty) {
-            return const Padding(
+            return Padding(
               padding: EdgeInsets.all(10),
               child: Center(
                 child: Text(
-                  'Sin palabras en el diccionario',
+                  t.no_words,
                   style: TextStyle(fontSize: 24),
                 ),
               ),
