@@ -60,5 +60,7 @@
     "placeholders": {
       "lang": {}
     }
-  }
+  },
+  "search": "搜索…",
+  "delete": "删除"
 }

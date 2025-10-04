@@ -60,5 +60,7 @@
     "placeholders": {
       "lang": {}
     }
-  }
+  },
+  "search": "Buscar…",
+  "delete": "Eliminar"
 }

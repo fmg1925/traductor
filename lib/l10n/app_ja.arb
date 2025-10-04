@@ -60,5 +60,7 @@
     "placeholders": {
       "lang": {}
     }
-  }
+  },
+  "search": "検索…",
+  "delete": "削除"
 }

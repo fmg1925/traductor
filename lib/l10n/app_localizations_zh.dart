@@ -122,4 +122,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String language_not_installed(Object lang) {
     return '你尚未安装 $lang 的语音包';
   }
+
+  @override
+  String get search => '搜索…';
+
+  @override
+  String get delete => '删除';
 }

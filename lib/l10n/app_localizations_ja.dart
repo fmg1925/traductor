@@ -122,4 +122,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String language_not_installed(Object lang) {
     return '$lang の音声パックがインストールされていません';
   }
+
+  @override
+  String get search => '検索…';
+
+  @override
+  String get delete => '削除';
 }

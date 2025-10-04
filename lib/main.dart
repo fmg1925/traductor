@@ -22,6 +22,14 @@ class MyApp extends StatelessWidget {
 
   final Box prefs = Hive.box<String>('prefs');
 
+  ThemeMode _themeModeFrom(String? v) {
+    switch ((v ?? 'system').toLowerCase()) {
+      case 'light': return ThemeMode.light;
+      case 'dark':  return ThemeMode.dark;
+      default:      return ThemeMode.system;
+    }
+  }
+
   Locale _parseLocaleTag(String tag) { // Convertir idiomas xx-XX a xx
     final parts = tag.split(RegExp(r'[-_]'));
     if (parts.length == 1) return Locale(parts[0]);
@@ -37,10 +45,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final box = Hive.box<String>('prefs');
     return ValueListenableBuilder<Box<String>>(
-      valueListenable: box.listenable(keys: const ['locale']),
+      valueListenable: box.listenable(keys: const ['locale', 'themeMode']),
       builder: (_, b, _) {
         final tag = b.get('locale', defaultValue: 'en')!;
         final loc = _parseLocaleTag(tag);
+        final mode = b.get('themeMode', defaultValue: 'system');
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           locale: loc,
@@ -57,7 +66,9 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          theme: ThemeData(fontFamily: 'Fira Code'),
+          theme: appTheme(Brightness.light),
+          darkTheme: appTheme(Brightness.dark),
+          themeMode: _themeModeFrom(mode),
           home: const HomePage(),
         );
       },
@@ -65,17 +76,17 @@ class MyApp extends StatelessWidget {
   }
 }
 
-final ipaStyle = GoogleFonts.notoSans( // Estilo para alfabeto fonético
+TextStyle ipaStyle(BuildContext context) => GoogleFonts.notoSans( // Estilo para alfabeto fonético
   fontSize: 13,
   height: 1.15,
-  color: const Color(0xFF424242),
+  color: Theme.of(context).colorScheme.onSurfaceVariant,
   textStyle: const TextStyle(overflow: TextOverflow.visible),
 );
 
-final wordStyle = const TextStyle( // Estilo para letras en general
+TextStyle wordStyle(BuildContext context) => TextStyle( // Estilo para letras en general
   fontSize: 16,
   height: 1.15,
-  color: Colors.black87,
+  color: Theme.of(context).colorScheme.onSurface,
 );
 
 extension L10nX on BuildContext { // Para recargar idioma en ejecución
@@ -119,3 +130,55 @@ String ttsLocaleFor(String code) { // Convertir locales a compatibles con TTS
       return 'en-US';
   }
 }
+
+const _seed = Color(0xFFE91E63);      // light primary
+const _darkPink = Color(0xFFAD1457);  // deeper accent for dark
+const _darkPinkContainer = Color.fromARGB(166, 163, 11, 64);
+
+ThemeData appTheme(Brightness brightness) {
+  final base = ColorScheme.fromSeed(seedColor: _seed, brightness: brightness);
+
+  final scheme = (brightness == Brightness.dark)
+      ? base.copyWith(
+          primary: const Color.fromARGB(145, 233, 30, 128),
+          onPrimary: Colors.white,
+          secondary: _darkPink,
+          onSecondary: Colors.white,
+          primaryContainer: _darkPinkContainer,
+          onPrimaryContainer: const Color(0xFFFFD9E4),
+        )
+      : base.copyWith(
+          primary: Colors.pink.shade600,
+          onPrimary: Colors.black,
+          secondary: _darkPink,
+          onSecondary: Colors.black,
+          primaryContainer: const Color.fromARGB(207, 255, 255, 255),
+          onPrimaryContainer: const Color(0xFF5A0018),
+          surface: _seed,
+        );
+
+  return ThemeData(
+    useMaterial3: true,
+    brightness: brightness,
+    colorScheme: scheme,
+    scaffoldBackgroundColor: scheme.surface,
+    textTheme: GoogleFonts.notoSansTextTheme(),
+    fontFamily: 'Fira Code',
+    cardTheme: const CardThemeData(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
+    ),
+    inputDecorationTheme: const InputDecorationTheme(
+      filled: true,
+      border: OutlineInputBorder(
+        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
+    ),
+  );
+}
+
+

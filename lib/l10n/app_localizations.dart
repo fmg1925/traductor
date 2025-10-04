@@ -313,6 +313,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You do not have the {lang} language voice pack installed'**
   String language_not_installed(Object lang);
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search…'**
+  String get search;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
 }
 
 class _AppLocalizationsDelegate

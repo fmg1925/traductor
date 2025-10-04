@@ -122,4 +122,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String language_not_installed(Object lang) {
     return '$lang 언어 음성 팩이 설치되지 않았습니다';
   }
+
+  @override
+  String get search => '검색…';
+
+  @override
+  String get delete => '삭제';
 }

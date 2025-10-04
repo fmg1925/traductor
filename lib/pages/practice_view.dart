@@ -189,7 +189,7 @@ class _PracticeViewState extends State<PracticeView> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: Colors.pinkAccent,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
         children: [
           languageDropdown(),
@@ -205,7 +205,7 @@ class _PracticeViewState extends State<PracticeView> {
             ),
           ),
           const SizedBox(height: 12),
-          ElevatedButton(onPressed: _generar, child: Text(t.generate)),
+          FilledButton.icon(onPressed: _generar, label: Text(t.generate)),
           const SizedBox(height: 12),
           Expanded(
             child: Padding(
@@ -228,51 +228,72 @@ class _PracticeViewState extends State<PracticeView> {
   }
 
   Padding languageDropdown() {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    Widget buildDrop({
+      required String value,
+      required void Function(String?) onChanged,
+      required Iterable<MapEntry<String, String>> items,
+    }) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: DropdownButton<String>(
+            value: value,
+            isExpanded: true,
+            borderRadius: BorderRadius.circular(12),
+            underline: const SizedBox.shrink(),
+            dropdownColor: scheme.surface,
+            iconEnabledColor: scheme.onSurfaceVariant,
+            iconDisabledColor: theme.disabledColor,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurface,
+            ),
+            items: items.map((e) {
+              return DropdownMenuItem<String>(
+                value: e.key,
+                child: Text(
+                  e.value,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurface,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: onChanged,
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Expanded(
-            child: DropdownButton<String>(
+            child: buildDrop(
               value: sourceLang,
-              isExpanded: true,
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => sourceLang = value);
-                }
+              onChanged: (v) {
+                if (v != null) setState(() => sourceLang = v);
               },
-              itemHeight: 60,
-              items: languages(context).entries.map((e) {
-                return DropdownMenuItem<String>(
-                  value: e.key,
-                  child: Text(e.value),
-                );
-              }).toList(),
+              items: languages(context).entries,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: DropdownButton<String>(
+            child: buildDrop(
               value: targetLang,
-              isExpanded: true,
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    targetLang = value;
-                  });
-                }
+              onChanged: (v) {
+                if (v != null) setState(() => targetLang = v);
               },
-              itemHeight: 60,
-              items: languages(context).entries
-                  .where((e) => e.key != 'auto')
-                  .map((e) {
-                    return DropdownMenuItem<String>(
-                      value: e.key,
-                      child: Text(e.value),
-                    );
-                  })
-                  .toList(),
+              items: languages(context).entries.where((e) => e.key != 'auto'),
             ),
           ),
         ],
@@ -386,8 +407,8 @@ class TranslationsArea extends StatelessWidget {
         targetLang: targetLang,
         sourceLang: item.detectedLanguage,
         ipaPerWord: item.originalIpa,
-        wordStyle: wordStyle,
-        ipaStyle: ipaStyle,
+        wordStyle: wordStyle(context),
+        ipaStyle: ipaStyle(context),
       ),
       buttons: rightButtons(
         t,
@@ -436,8 +457,8 @@ class TranslationsArea extends StatelessWidget {
         targetLang: item.detectedLanguage,
         sourceLang: item.target,
         ipaPerWord: item.translatedIpa,
-        wordStyle: wordStyle,
-        ipaStyle: ipaStyle,
+        wordStyle: wordStyle(context),
+        ipaStyle: ipaStyle(context),
       ),
       copyText: item.translatedText,
       buttons: rightButtons(
@@ -530,69 +551,66 @@ class TranslationsArea extends StatelessWidget {
   }
 
   Widget _tileRich(
-    BuildContext context,
-    String title,
-    Widget body, {
-    Color? color,
-    String? errorText,
-    VoidCallback? onTts,
-    String? copyText,
-    Widget? buttons,
-  }) {
-    final t = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+  BuildContext context,
+  String title,
+  Widget body, {
+  Color? color,
+  String? errorText,
+  VoidCallback? onTts,
+  String? copyText,
+  Widget? buttons,
+}) {
+  final t = AppLocalizations.of(context);
+  final theme = Theme.of(context);
 
-    final bool showDefaultActions =
-        (onTts != null && copyText != null && buttons == null);
-    final double rightReserve = (buttons != null || showDefaultActions)
-        ? 50.0
-        : 0.0;
+  const railW = 48.0;
+  const gap = 12.0;
 
-    final Widget? rightSide =
-        buttons ??
-        (showDefaultActions
-            ? Positioned(
-                top: 0,
-                right: 0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    IconButton.filledTonal(
-                      icon: Icon(tts.getState() ? Icons.stop : Icons.volume_up),
-                      tooltip: tts.getState() ? t.stop : t.listen,
-                      onPressed: onTts,
-                      iconSize: 20,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 40,
-                        height: 40,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    const SizedBox(height: 4),
-                    IconButton.filledTonal(
-                      icon: const Icon(Icons.copy_all),
-                      tooltip: t.copy,
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: copyText));
-                        ScaffoldMessenger.of(context)
-                          ..hideCurrentSnackBar()
-                          ..showSnackBar(SnackBar(content: Text(t.copied)));
-                      },
-                      iconSize: 20,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 40,
-                        height: 40,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  ],
+  final showDefaultActions = (onTts != null && copyText != null && buttons == null);
+  final hasRail = buttons != null || showDefaultActions;
+
+  // Build default rail if caller didn't supply one
+  Widget? rail = buttons;
+  rail ??= showDefaultActions
+      ? Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            IconButton.filledTonal(
+              icon: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 150),
+                child: Icon(
+                  tts.getState() ? Icons.stop : Icons.volume_up,
+                  key: ValueKey(tts.getState()),
                 ),
-              )
-            : null);
+              ),
+              tooltip: tts.getState() ? t.stop : t.listen,
+              onPressed: onTts,
+              iconSize: 20,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: railW, height: railW),
+              visualDensity: VisualDensity.compact,
+            ),
+            const SizedBox(height: 8),
+            IconButton.filledTonal(
+              icon: const Icon(Icons.copy_all),
+              tooltip: t.copy,
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: copyText));
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(SnackBar(content: Text(t.copied)));
+              },
+              iconSize: 20,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: railW, height: railW),
+              visualDensity: VisualDensity.compact,
+            ),
+          ],
+        )
+      : null;
 
-    return Container(
+  return maxWidth(
+    child: Container(
       constraints: const BoxConstraints(minHeight: 100),
       decoration: BoxDecoration(
         color: color ?? theme.colorScheme.surface,
@@ -600,39 +618,45 @@ class TranslationsArea extends StatelessWidget {
         border: Border.all(color: theme.dividerColor),
       ),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Stack(
-        clipBehavior: Clip.none,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(right: rightReserve, top: 5),
-                child: Text(
+          // Content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
                   title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleMedium?.copyWith(height: 1.05),
                   textHeightBehavior: const TextHeightBehavior(
                     applyHeightToFirstAscent: true,
                     applyHeightToLastDescent: false,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: EdgeInsets.only(right: rightReserve),
-                child: body,
-              ),
-              if (errorText != null) ...[
-                const SizedBox(height: 8),
-                Text(errorText, style: TextStyle(color: Colors.red.shade700)),
+                const SizedBox(height: gap),
+                body,
+                if (errorText != null) ...[
+                  const SizedBox(height: gap),
+                  Text(errorText, style: TextStyle(color: Colors.red.shade700)),
+                ],
               ],
-            ],
+            ),
           ),
-          if (rightSide != null) rightSide,
+
+          // Right action rail (optional)
+          if (hasRail) ...[
+            const SizedBox(width: gap),
+            SizedBox(width: railW, child: rail),
+          ],
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Positioned rightButtons(
     AppLocalizations t,
@@ -674,4 +698,11 @@ class TranslationsArea extends StatelessWidget {
       ),
     );
   }
+
+  Widget maxWidth({required Widget child}) => Center(
+  child: ConstrainedBox(
+    constraints: const BoxConstraints(maxWidth: 900),
+    child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: child),
+  ),
+);
 }

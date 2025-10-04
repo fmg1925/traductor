@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> {
         if (mounted) setState(() {});
       },
     );
-    if(!isWindowsDesktop) _initSpeech(); // Iniciar en todos menos windows
+    if (!isWindowsDesktop) _initSpeech(); // Iniciar en todos menos windows
   }
 
   Future<void> _initSpeech() async {
@@ -78,23 +78,23 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _startListening() async {
-  if (!mounted || !_speechEnabled || _speechToText.isListening) return;
-  try {
-    await _speechToText.listen(
-      onResult: _onSpeechResult,
-      localeId: sourceLang,
-      listenOptions: SpeechListenOptions(
-        listenMode: ListenMode.confirmation,
-        partialResults: true,
-        cancelOnError: true,
-      ),
-      pauseFor: const Duration(seconds: 3),
-    );
-    setState(() {});
-  } catch (_) {
-    setState(() {});
+    if (!mounted || !_speechEnabled || _speechToText.isListening) return;
+    try {
+      await _speechToText.listen(
+        onResult: _onSpeechResult,
+        localeId: sourceLang,
+        listenOptions: SpeechListenOptions(
+          listenMode: ListenMode.confirmation,
+          partialResults: true,
+          cancelOnError: true,
+        ),
+        pauseFor: const Duration(seconds: 3),
+      );
+      setState(() {});
+    } catch (_) {
+      setState(() {});
+    }
   }
-}
 
   Future<void> _stopListening() async {
     if (!mounted || !_speechEnabled || !_speechToText.isListening) return;
@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage> {
 
   void _onSpeechResult(SpeechRecognitionResult result) {
     _controller.text = result.recognizedWords;
-    if(result.finalResult) {
+    if (result.finalResult) {
       _speechListening = false;
     }
     if (mounted) setState(() {});
@@ -126,8 +126,12 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _controller.dispose();
-    try { _speechToText.cancel(); } catch (_) {}
-    try { tts.dispose(); } catch (_) {}
+    try {
+      _speechToText.cancel();
+    } catch (_) {}
+    try {
+      tts.dispose();
+    } catch (_) {}
     super.dispose();
   }
 
@@ -173,11 +177,7 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       if (mounted) {
         final t = AppLocalizations.of(context);
-        PopUp.showPopUp(
-          context,
-          t.error,
-          '${t.error_ocr}: ${e.toString()}',
-        );
+        PopUp.showPopUp(context, t.error, '${t.error_ocr}: ${e.toString()}');
       }
       setState(() {
         translationFuture = Future.error(e);
@@ -187,43 +187,76 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: appBar(),
-      backgroundColor: Colors.pinkAccent,
-      body: IndexedStack(
-        index: index,
-        children: [
-          mainColumn(),
-          PracticeView(
-            provider: provider,
-            initialSourceLang: sourceLang,
-            initialTargetLang: targetLang,
-          ),
-          const DiccionarioView(),
-        ],
+      backgroundColor: scheme.surface,
+      body: SafeArea(
+        child: IndexedStack(
+          index: index,
+          children: [
+            mainColumn(),
+            PracticeView(
+              provider: provider,
+              initialSourceLang: sourceLang,
+              initialTargetLang: targetLang,
+            ),
+            const DiccionarioView(),
+          ],
+        ),
       ),
       bottomNavigationBar: bottomNavBar(),
     );
   }
 
   AppBar appBar() {
+    final theme = Theme.of(context);
     return AppBar(
-      title: const Text(
+      title: Text(
         'Trilingo',
-        style: TextStyle(
-          color: Colors.black87,
-          fontSize: 18,
+        style: theme.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.bold,
+          color: theme.colorScheme.onSurface, // theme-aware
         ),
       ),
-      backgroundColor: const Color.fromARGB(50, 0, 0, 0),
+      backgroundColor: theme.appBarTheme.backgroundColor ?? Colors.transparent,
       centerTitle: true,
-      elevation: 0.0,
-      actions: [localeDropdown()],
+      elevation: 0,
+      actions: [themeModeMenu(), const SizedBox(width: 8), localeDropdown()],
+    );
+  }
+
+  Widget themeModeMenu() {
+    final box = Hive.box<String>('prefs');
+    final current = (box.get('themeMode') ?? 'system').toLowerCase();
+    return PopupMenuButton<String>(
+      tooltip: 'Theme',
+      icon: const Icon(Icons.brightness_6),
+      onSelected: (v) => box.put('themeMode', v),
+      itemBuilder: (ctx) => [
+        CheckedPopupMenuItem(
+          value: 'system',
+          checked: current == 'system',
+          child: const Text('System'),
+        ),
+        CheckedPopupMenuItem(
+          value: 'light',
+          checked: current == 'light',
+          child: const Text('Light'),
+        ),
+        CheckedPopupMenuItem(
+          value: 'dark',
+          checked: current == 'dark',
+          child: const Text('Dark'),
+        ),
+      ],
     );
   }
 
   Padding localeDropdown() {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
@@ -232,22 +265,48 @@ class _HomePageState extends State<HomePage> {
           SizedBox(
             width: 150,
             height: 35,
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: selectedLocale,
-                itemHeight: 48,
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => selectedLocale = value);
-                  Hive.box<String>('prefs').put('locale', value);
-                },
-                items: locales(context).entries.map((e) {
-                  return DropdownMenuItem<String>(
-                    value: e.key,
-                    child: Text(e.value, overflow: TextOverflow.ellipsis),
-                  );
-                }).toList(),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest, // button bg
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: theme.dividerColor),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedLocale,
+                    isExpanded: true,
+                    itemHeight: 48,
+                    borderRadius: BorderRadius.circular(12), // rounded menu
+                    dropdownColor: scheme.surface, // menu sheet color
+                    iconEnabledColor: scheme.onSurfaceVariant,
+                    iconDisabledColor: theme.disabledColor,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurface,
+                    ),
+                    // slightly denser
+                    isDense: true,
+                    menuMaxHeight: 320,
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() => selectedLocale = value);
+                      Hive.box<String>('prefs').put('locale', value);
+                    },
+                    items: locales(context).entries.map((e) {
+                      return DropdownMenuItem<String>(
+                        value: e.key,
+                        child: Text(
+                          e.value,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
               ),
             ),
           ),
@@ -258,13 +317,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Container mainBody() {
+    final scheme = Theme.of(context).colorScheme;
     final t = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.only(top: 40, left: 20, right: 20),
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: const Color(0xff1F1617).withAlpha(50),
+            color: scheme.shadow.withValues(alpha: 0.15),
             blurRadius: 40,
           ),
         ],
@@ -275,7 +335,7 @@ class _HomePageState extends State<HomePage> {
         onSubmitted: (_) => _generar(),
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: scheme.onInverseSurface,
           hintText: t.main_hint,
           border: const OutlineInputBorder(
             borderSide: BorderSide.none,
@@ -290,16 +350,30 @@ class _HomePageState extends State<HomePage> {
             minHeight: 40,
           ),
           suffixIcon: IconButton(
-            tooltip: !isWindowsDesktop ? _speechListening ? t.stop : t.start : t.feature_not_available_windows,
-            icon: Icon(_speechListening ? Icons.mic_none : Icons.mic, color: isWindowsDesktop ? Colors.grey : null),
+            tooltip: !isWindowsDesktop
+                ? _speechListening
+                      ? t.stop
+                      : t.start
+                : t.feature_not_available_windows,
+            icon: Icon(
+              _speechListening ? Icons.mic_none : Icons.mic,
+              color: isWindowsDesktop ? Colors.grey : null,
+            ),
             onPressed: !_speechEnabled
                 ? null
                 : () async {
-                  if(isWindowsDesktop) {
-                    PopUp.showPopUp(context, t.feature_not_available, t.feature_not_available_windows);
-                    return;
-                  } 
-                  _speechListening ? await _stopListening() : await _startListening(); },
+                    if (isWindowsDesktop) {
+                      PopUp.showPopUp(
+                        context,
+                        t.feature_not_available,
+                        t.feature_not_available_windows,
+                      );
+                      return;
+                    }
+                    _speechListening
+                        ? await _stopListening()
+                        : await _startListening();
+                  },
           ),
         ),
       ),
@@ -328,51 +402,72 @@ class _HomePageState extends State<HomePage> {
   }
 
   Padding languageDropdown() {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    Widget buildDrop({
+      required String value,
+      required void Function(String?) onChanged,
+      required Iterable<MapEntry<String, String>> items,
+    }) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: DropdownButton<String>(
+            value: value,
+            isExpanded: true,
+            borderRadius: BorderRadius.circular(12),
+            underline: const SizedBox.shrink(),
+            dropdownColor: scheme.surface,
+            iconEnabledColor: scheme.onSurfaceVariant,
+            iconDisabledColor: theme.disabledColor,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurface,
+            ),
+            items: items.map((e) {
+              return DropdownMenuItem<String>(
+                value: e.key,
+                child: Text(
+                  e.value,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurface,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: onChanged,
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Expanded(
-            child: DropdownButton<String>(
+            child: buildDrop(
               value: sourceLang,
-              isExpanded: true,
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => sourceLang = value);
-                }
+              onChanged: (v) {
+                if (v != null) setState(() => sourceLang = v);
               },
-              itemHeight: 60,
-              items: languages(context).entries.map((e) {
-                return DropdownMenuItem<String>(
-                  value: e.key,
-                  child: Text(e.value),
-                );
-              }).toList(),
+              items: languages(context).entries,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: DropdownButton<String>(
+            child: buildDrop(
               value: targetLang,
-              isExpanded: true,
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    targetLang = value;
-                  });
-                }
+              onChanged: (v) {
+                if (v != null) setState(() => targetLang = v);
               },
-              itemHeight: 60,
-              items: languages(context).entries
-                  .where((e) => e.key != 'auto')
-                  .map((e) {
-                    return DropdownMenuItem<String>(
-                      value: e.key,
-                      child: Text(e.value),
-                    );
-                  })
-                  .toList(),
+              items: languages(context).entries.where((e) => e.key != 'auto'),
             ),
           ),
         ],
@@ -383,28 +478,23 @@ class _HomePageState extends State<HomePage> {
   Padding generarButton() {
     final t = AppLocalizations.of(context);
     final isEmpty = _controller.text.trim().isEmpty;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          ElevatedButton.icon(
+          // Primary action
+          FilledButton.icon(
             onPressed: _generar,
             icon: const Icon(Icons.play_arrow),
             label: Text(isEmpty ? t.generate_translation : t.translate),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-            ),
           ),
-          ElevatedButton.icon(
+          // Secondary action
+          FilledButton.icon(
             onPressed: _ocr,
-            icon: const Icon(Icons.play_arrow),
+            icon: const Icon(Icons.document_scanner),
             label: const Text('OCR'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-            ),
           ),
         ],
       ),
@@ -415,9 +505,14 @@ class _HomePageState extends State<HomePage> {
     final t = AppLocalizations.of(context);
     return NavigationBar(
       selectedIndex: index,
+      indicatorColor: Theme.of(context).colorScheme.secondaryContainer,
       onDestinationSelected: (i) {
         if (isWindowsDesktop && i == 1) {
-          PopUp.showPopUp(context, t.feature_not_available, t.feature_not_available_windows);
+          PopUp.showPopUp(
+            context,
+            t.feature_not_available,
+            t.feature_not_available_windows,
+          );
           return;
         }
         setState(() => index = i);
@@ -430,7 +525,10 @@ class _HomePageState extends State<HomePage> {
         ),
         NavigationDestination(
           icon: Icon(Icons.mic, color: isWindowsDesktop ? Colors.grey : null),
-          selectedIcon: Icon(Icons.mic_sharp, color: isWindowsDesktop && !kIsWeb ? Colors.grey : null),
+          selectedIcon: Icon(
+            Icons.mic_sharp,
+            color: isWindowsDesktop && !kIsWeb ? Colors.grey : null,
+          ),
           label: t.practice,
         ),
         NavigationDestination(
@@ -455,11 +553,12 @@ class TranslationsArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
     if (future == null) {
       return Center(
         child: Text(
           t.main_hint,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(color: scheme.onSecondary, fontSize: 16),
           textAlign: TextAlign.center,
         ),
       );
@@ -473,6 +572,8 @@ class TranslationsArea extends StatelessWidget {
       future: future,
       builder: (context, snap) {
         final t = AppLocalizations.of(context);
+        final scheme  = Theme.of(context).colorScheme;
+        final isLight = Theme.of(context).brightness == Brightness.light;
         if (snap.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -496,8 +597,15 @@ class TranslationsArea extends StatelessWidget {
             ),
           );
         }
-        if(!snap.hasData) {
-          return _tileRich(context, t.error, const SizedBox.shrink(), onTts: () {}, copyText: '');
+        if (!snap.hasData) {
+          return _tileRich(
+            context,
+            t.error,
+            const SizedBox.shrink(),
+            onTts: () {},
+            copyText: '',
+            foregroundColor: isLight ? scheme.onSecondary : null,
+          );
         }
         final item = snap.data!;
         return ListView(
@@ -511,18 +619,20 @@ class TranslationsArea extends StatelessWidget {
                 targetLang: targetLang,
                 sourceLang: item.detectedLanguage,
                 ipaPerWord: item.originalIpa,
-                wordStyle: wordStyle,
-                ipaStyle: ipaStyle,
+                wordStyle: wordStyle(context),
+                ipaStyle: ipaStyle(context),
               ),
               onTts: () async {
-                if(tts.getState() == true) {
+                if (tts.getState() == true) {
                   await tts.stop();
                   return;
                 }
                 final langs = languages(context);
                 final langName = langs[item.detectedLanguage];
 
-                final available = await tts.isLanguageAvailable(ttsLocaleFor(item.detectedLanguage));
+                final available = await tts.isLanguageAvailable(
+                  ttsLocaleFor(item.detectedLanguage),
+                );
                 if (!context.mounted) return;
 
                 if (available != true) {
@@ -538,6 +648,7 @@ class TranslationsArea extends StatelessWidget {
                 await tts.speak(item.originalText);
               },
               copyText: item.originalText,
+              color: scheme.primaryContainer
             ),
             const SizedBox(height: 12),
             _tileRich(
@@ -548,18 +659,20 @@ class TranslationsArea extends StatelessWidget {
                 targetLang: item.detectedLanguage,
                 sourceLang: item.target,
                 ipaPerWord: item.translatedIpa,
-                wordStyle: wordStyle,
-                ipaStyle: ipaStyle,
+                wordStyle: wordStyle(context),
+                ipaStyle: ipaStyle(context),
               ),
               onTts: () async {
-                if(tts.getState() == true) {
+                if (tts.getState() == true) {
                   await tts.stop();
                   return;
                 }
                 final langs = languages(context);
                 final langName = langs[item.target];
 
-                final available = await tts.isLanguageAvailable(ttsLocaleFor(item.target));
+                final available = await tts.isLanguageAvailable(
+                  ttsLocaleFor(item.target),
+                );
 
                 if (!context.mounted) return;
 
@@ -576,6 +689,7 @@ class TranslationsArea extends StatelessWidget {
                 await tts.speak(item.translatedText);
               },
               copyText: item.translatedText,
+              color: scheme.primaryContainer
             ),
           ],
         );
@@ -584,98 +698,168 @@ class TranslationsArea extends StatelessWidget {
   }
 
   Widget _tileRich(
-    BuildContext context,
-    String title,
-    Widget body, {
-    Color? color,
-    String? errorText,
-    required VoidCallback onTts,
-    required String copyText,
-  }) {
-    final t = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+  BuildContext context,
+  String title,
+  Widget body, {
+  Color? color,
+  Color? foregroundColor, // ← NEW (for contrast on colored cards)
+  String? errorText,
+  required VoidCallback onTts,
+  required String copyText,
+}) {
+  final theme = Theme.of(context);
+  final scheme = theme.colorScheme;
 
-    return Container(
+  final bg = color ?? scheme.surface;
+  final fg = foregroundColor ?? scheme.onSurface;
+
+  const railW = 48.0;
+  const gap   = 12.0;
+
+  // Locally tint text & icons so they contrast with `bg`
+  final localTheme = theme.copyWith(
+    textTheme: theme.textTheme.apply(
+      bodyColor: fg,
+      displayColor: fg,
+    ),
+    iconTheme: IconThemeData(color: fg),
+  );
+
+  return maxWidth(
+    child: Container(
       constraints: const BoxConstraints(minHeight: 100),
       decoration: BoxDecoration(
-        color: color ?? theme.colorScheme.surface,
+        color: bg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: theme.dividerColor),
       ),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 5),
-                child: Text(
-                  title,
-                  style: theme.textTheme.titleMedium?.copyWith(height: 1.05),
-                  textHeightBehavior: const TextHeightBehavior(
-                    applyHeightToFirstAscent: true,
-                    applyHeightToLastDescent: false,
+      child: Theme(
+        data: localTheme,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 4),
+                  Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      height: 1.05,
+                      color: fg,
+                    ),
+                    textHeightBehavior: const TextHeightBehavior(
+                      applyHeightToFirstAscent: true,
+                      applyHeightToLastDescent: false,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: gap),
+                  body,
+                  if (errorText != null) ...[
+                    const SizedBox(height: gap),
+                    Text(errorText), // color inherited (fg)
+                  ],
+                ],
               ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(right: 50),
-                child: body,
+            ),
+            const SizedBox(width: gap),
+            SizedBox(
+              width: railW,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  IconButton.filledTonal(
+                    icon: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 150),
+                      child: Icon(
+                        tts.getState() ? Icons.stop : Icons.volume_up,
+                        key: ValueKey(tts.getState()),
+                      ),
+                    ),
+                    tooltip: tts.getState() ? 'Stop' : 'Listen',
+                    onPressed: onTts,
+                    iconSize: 20,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints.tightFor(width: railW, height: railW),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  const SizedBox(height: 8),
+                  IconButton.filledTonal(
+                    icon: const Icon(Icons.copy_all),
+                    tooltip: 'Copy',
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: copyText));
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(const SnackBar(content: Text('Copied')));
+                    },
+                    iconSize: 20,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints.tightFor(width: railW, height: railW),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
               ),
-              if (errorText != null) ...[
-                const SizedBox(height: 8),
-                Text(errorText, style: TextStyle(color: Colors.red.shade700)),
-              ],
-            ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+  Positioned rightButtons(
+    AppLocalizations t,
+    VoidCallback onTts,
+    String copyText,
+    BuildContext context,
+  ) {
+    return Positioned(
+      top: -5,
+      right: 0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          IconButton.filledTonal(
+            icon: Icon(tts.getState() ? Icons.stop : Icons.volume_up),
+            tooltip: tts.getState() ? t.stop : t.listen,
+            onPressed: onTts,
+            iconSize: 20,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 50, height: 50),
+            visualDensity: VisualDensity.compact,
           ),
-          rightButtons(t, onTts, copyText, context),
+          const SizedBox(height: 4),
+          IconButton.filledTonal(
+            icon: const Icon(Icons.copy_all),
+            tooltip: t.copy,
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: copyText));
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(SnackBar(content: Text(t.copied)));
+            },
+            iconSize: 20,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 50, height: 50),
+            visualDensity: VisualDensity.compact,
+          ),
         ],
       ),
     );
   }
 
-  Positioned rightButtons(AppLocalizations t, VoidCallback onTts, String copyText, BuildContext context) {
-    return Positioned(
-          top: -5,
-          right: 0,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              IconButton.filledTonal(
-                icon: Icon(tts.getState() ? Icons.stop : Icons.volume_up),
-                tooltip: tts.getState() ? t.stop : t.listen,
-                onPressed: onTts,
-                iconSize: 20,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 50,
-                  height: 50,
-                ),
-                visualDensity: VisualDensity.compact,
-              ),
-              const SizedBox(height: 4),
-              IconButton.filledTonal(
-                icon: const Icon(Icons.copy_all),
-                tooltip: t.copy,
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: copyText));
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(SnackBar(content: Text(t.copied)));
-                },
-                iconSize: 20,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 50,
-                  height: 50,
-                ),
-                visualDensity: VisualDensity.compact,
-              ),
-            ],
-          ),
-        );
-  }
+  Widget maxWidth({required Widget child}) => Center(
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 900),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: child,
+      ),
+    ),
+  );
 }

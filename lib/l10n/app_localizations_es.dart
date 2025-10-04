@@ -123,4 +123,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String language_not_installed(Object lang) {
     return 'No tienes instalado el paquete de voz del idioma $lang';
   }
+
+  @override
+  String get search => 'Buscar…';
+
+  @override
+  String get delete => 'Eliminar';
 }
