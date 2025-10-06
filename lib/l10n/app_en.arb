@@ -62,5 +62,9 @@
     }
   },
   "search": "Search…",
-  "delete": "Delete"
+  "delete": "Delete",
+  "no_mic_input": "No microphone input detected",
+  "@no_mic_input": {},
+  "no_match": "No words match in {lang} language",
+  "@no_match": { "placeholders": { "lang": { "type": "String" } } }
 }

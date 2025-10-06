@@ -117,11 +117,12 @@ class _TapWordTextState extends State<TapWordText> {
       translating = true;
       final result = await WordCache.get(trim, effectiveOrigin, effectiveTarget);
       if (!mounted) return;
+      final scheme = Theme.of(context).colorScheme;
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: Text('“$trim” → $effectiveTarget'),
-          content: Text((result == null || result.isEmpty) ? '—' : result),
+          title: Text('“$trim” → $effectiveTarget', style: TextStyle(color: scheme.onPrimary)),
+          content: Text((result == null || result.isEmpty) ? '—' : result, style: TextStyle(color: scheme.onPrimary)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),

@@ -82,13 +82,14 @@ class _HomePageState extends State<HomePage> {
     try {
       await _speechToText.listen(
         onResult: _onSpeechResult,
-        localeId: sourceLang,
+        localeId: ttsLocaleFor(sourceLang),
         listenOptions: SpeechListenOptions(
-          listenMode: ListenMode.confirmation,
+          listenMode: ListenMode.dictation,
           partialResults: true,
           cancelOnError: true,
         ),
-        pauseFor: const Duration(seconds: 3),
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 10),
       );
       setState(() {});
     } catch (_) {
@@ -107,6 +108,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _speechListening = false;
         });
+        return;
       }
     } finally {
       setState(() {
@@ -178,6 +180,7 @@ class _HomePageState extends State<HomePage> {
       if (mounted) {
         final t = AppLocalizations.of(context);
         PopUp.showPopUp(context, t.error, '${t.error_ocr}: ${e.toString()}');
+        return;
       }
       setState(() {
         translationFuture = Future.error(e);
@@ -216,10 +219,10 @@ class _HomePageState extends State<HomePage> {
         'Trilingo',
         style: theme.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.bold,
-          color: theme.colorScheme.onSurface, // theme-aware
+          color: theme.colorScheme.onSurface,
         ),
       ),
-      backgroundColor: theme.appBarTheme.backgroundColor ?? Colors.transparent,
+      backgroundColor: theme.colorScheme.tertiary,
       centerTitle: true,
       elevation: 0,
       actions: [themeModeMenu(), const SizedBox(width: 8), localeDropdown()],
@@ -267,7 +270,7 @@ class _HomePageState extends State<HomePage> {
             height: 35,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest, // button bg
+                color: scheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: theme.dividerColor),
               ),
@@ -333,6 +336,7 @@ class _HomePageState extends State<HomePage> {
         controller: _controller,
         onChanged: (_) => setState(() {}),
         onSubmitted: (_) => _generar(),
+        style: TextStyle(color: scheme.onPrimary),
         decoration: InputDecoration(
           filled: true,
           fillColor: scheme.onInverseSurface,
@@ -412,7 +416,7 @@ class _HomePageState extends State<HomePage> {
     }) {
       return DecoratedBox(
         decoration: BoxDecoration(
-          color: scheme.surfaceContainerHighest,
+          color: scheme.primary,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: theme.dividerColor),
         ),
@@ -478,23 +482,24 @@ class _HomePageState extends State<HomePage> {
   Padding generarButton() {
     final t = AppLocalizations.of(context);
     final isEmpty = _controller.text.trim().isEmpty;
+    final scheme  = Theme.of(context).colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Primary action
           FilledButton.icon(
             onPressed: _generar,
             icon: const Icon(Icons.play_arrow),
             label: Text(isEmpty ? t.generate_translation : t.translate),
+            style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(scheme.secondaryContainer)),
           ),
-          // Secondary action
           FilledButton.icon(
             onPressed: _ocr,
             icon: const Icon(Icons.document_scanner),
             label: const Text('OCR'),
+            style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(scheme.secondaryContainer)),
           ),
         ],
       ),
@@ -558,7 +563,7 @@ class TranslationsArea extends StatelessWidget {
       return Center(
         child: Text(
           t.main_hint,
-          style: TextStyle(color: scheme.onSecondary, fontSize: 16),
+          style: TextStyle(color: scheme.onPrimary, fontSize: 16),
           textAlign: TextAlign.center,
         ),
       );
@@ -573,25 +578,18 @@ class TranslationsArea extends StatelessWidget {
       builder: (context, snap) {
         final t = AppLocalizations.of(context);
         final scheme  = Theme.of(context).colorScheme;
-        final isLight = Theme.of(context).brightness == Brightness.light;
         if (snap.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
         if (snap.hasError) {
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            PopUp.showPopUp(
-              context,
-              t.error,
-              '${t.error_translation}: ${snap.error}',
-            );
-          });
+          final t = AppLocalizations.of(context);
           return SingleChildScrollView(
             child: _tileRich(
               context,
               t.error,
               const SizedBox.shrink(),
-              color: Colors.red.shade50,
-              errorText: '${snap.error}',
+              errorText: t.error_translation('${snap.error}'),
+              color: scheme.primary,
               onTts: () {},
               copyText: snap.error.toString(),
             ),
@@ -601,10 +599,10 @@ class TranslationsArea extends StatelessWidget {
           return _tileRich(
             context,
             t.error,
+            foregroundColor: scheme.error,
             const SizedBox.shrink(),
             onTts: () {},
             copyText: '',
-            foregroundColor: isLight ? scheme.onSecondary : null,
           );
         }
         final item = snap.data!;
@@ -648,7 +646,6 @@ class TranslationsArea extends StatelessWidget {
                 await tts.speak(item.originalText);
               },
               copyText: item.originalText,
-              color: scheme.primaryContainer
             ),
             const SizedBox(height: 12),
             _tileRich(
@@ -689,7 +686,6 @@ class TranslationsArea extends StatelessWidget {
                 await tts.speak(item.translatedText);
               },
               copyText: item.translatedText,
-              color: scheme.primaryContainer
             ),
           ],
         );
@@ -702,7 +698,7 @@ class TranslationsArea extends StatelessWidget {
   String title,
   Widget body, {
   Color? color,
-  Color? foregroundColor, // ← NEW (for contrast on colored cards)
+  Color? foregroundColor,
   String? errorText,
   required VoidCallback onTts,
   required String copyText,
@@ -716,13 +712,14 @@ class TranslationsArea extends StatelessWidget {
   const railW = 48.0;
   const gap   = 12.0;
 
-  // Locally tint text & icons so they contrast with `bg`
+  final t = AppLocalizations.of(context);
+
   final localTheme = theme.copyWith(
     textTheme: theme.textTheme.apply(
-      bodyColor: fg,
+      bodyColor: bg,
       displayColor: fg,
+      decorationColor: fg,
     ),
-    iconTheme: IconThemeData(color: fg),
   );
 
   return maxWidth(
@@ -750,7 +747,7 @@ class TranslationsArea extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleMedium?.copyWith(
                       height: 1.05,
-                      color: fg,
+                      color: theme.colorScheme.onPrimary,
                     ),
                     textHeightBehavior: const TextHeightBehavior(
                       applyHeightToFirstAscent: true,
@@ -761,7 +758,7 @@ class TranslationsArea extends StatelessWidget {
                   body,
                   if (errorText != null) ...[
                     const SizedBox(height: gap),
-                    Text(errorText), // color inherited (fg)
+                    Text(errorText, style: TextStyle(color: Colors.red)),
                   ],
                 ],
               ),
@@ -780,7 +777,7 @@ class TranslationsArea extends StatelessWidget {
                         key: ValueKey(tts.getState()),
                       ),
                     ),
-                    tooltip: tts.getState() ? 'Stop' : 'Listen',
+                    tooltip: tts.getState() ? t.stop : t.listen,
                     onPressed: onTts,
                     iconSize: 20,
                     padding: EdgeInsets.zero,
@@ -790,12 +787,12 @@ class TranslationsArea extends StatelessWidget {
                   const SizedBox(height: 8),
                   IconButton.filledTonal(
                     icon: const Icon(Icons.copy_all),
-                    tooltip: 'Copy',
+                    tooltip: t.copy,
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: copyText));
                       ScaffoldMessenger.of(context)
                         ..hideCurrentSnackBar()
-                        ..showSnackBar(const SnackBar(content: Text('Copied')));
+                        ..showSnackBar(SnackBar(content: Text(t.copied)));
                     },
                     iconSize: 20,
                     padding: EdgeInsets.zero,

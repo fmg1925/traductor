@@ -46,23 +46,33 @@ dependencies:
   web: ^1.1.1
   google_fonts: ^6.3.2
   image_picker: ^1.2.0
-  flutter_tts: 3.8.5
+  flutter_tts: ^3.8.5
   speech_to_text: ^7.3.0
   universal_io: ^2.2.2
-
-# dependency_overrides:
-#   flutter_tts:
-#     path: plugins/flutter_tts_local
+  flutter_native_splash: ^2.4.6
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icon.jpg"
+  image_path: "assets/splash.png"
   web:
     generate: true
-    image_path: "assets/icon.jpg"
+    image_path: "assets/splash.png"
     background_color: "#ffffff"
     theme_color: "#ffffff"
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  color_dark: "#000000"
+  image: assets/splash.png
+  image_dark: assets/splash_dark.png
+  android: true
+  ios: true
+  android_12:
+    color: "#FFFFFF"
+    color_dark: "#000000"
+    image: assets/splash.png
+    image_dark: assets/splash_dark.png
 
 dev_dependencies:
   flutter_test:

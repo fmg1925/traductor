@@ -79,7 +79,7 @@ class MyApp extends StatelessWidget {
 TextStyle ipaStyle(BuildContext context) => GoogleFonts.notoSans( // Estilo para alfabeto fonético
   fontSize: 13,
   height: 1.15,
-  color: Theme.of(context).colorScheme.onSurfaceVariant,
+  color: Theme.of(context).colorScheme.onSecondary,
   textStyle: const TextStyle(overflow: TextOverflow.visible),
 );
 
@@ -131,8 +131,8 @@ String ttsLocaleFor(String code) { // Convertir locales a compatibles con TTS
   }
 }
 
-const _seed = Color(0xFFE91E63);      // light primary
-const _darkPink = Color(0xFFAD1457);  // deeper accent for dark
+const _seed = Color.fromARGB(255, 190, 24, 93);
+const _darkPink = Color(0xFFAD1457);
 const _darkPinkContainer = Color.fromARGB(166, 163, 11, 64);
 
 ThemeData appTheme(Brightness brightness) {
@@ -140,21 +140,25 @@ ThemeData appTheme(Brightness brightness) {
 
   final scheme = (brightness == Brightness.dark)
       ? base.copyWith(
-          primary: const Color.fromARGB(145, 233, 30, 128),
+          primary: Color.fromARGB(100, 0, 0, 0),
           onPrimary: Colors.white,
           secondary: _darkPink,
           onSecondary: Colors.white,
           primaryContainer: _darkPinkContainer,
-          onPrimaryContainer: const Color(0xFFFFD9E4),
+          onPrimaryContainer: const Color.fromARGB(255, 217, 255, 246),
+          secondaryContainer: const Color.fromARGB(145, 233, 30, 128),
+          tertiary: const Color.from(alpha: 0, red: 0, green: 0, blue: 0)
         )
       : base.copyWith(
-          primary: Colors.pink.shade600,
+          primary: const Color.fromARGB(255, 255, 255, 255),
           onPrimary: Colors.black,
           secondary: _darkPink,
           onSecondary: Colors.black,
           primaryContainer: const Color.fromARGB(207, 255, 255, 255),
           onPrimaryContainer: const Color(0xFF5A0018),
+          secondaryContainer: const Color.fromARGB(255, 255, 255, 255),
           surface: _seed,
+          tertiary: const Color.fromARGB(20, 0, 0, 0)
         );
 
   return ThemeData(

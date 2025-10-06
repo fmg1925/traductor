@@ -1,10 +1,13 @@
-flask
-python-dotenv
-requests
-nltk
-flask-cors
-diskcache
-phonemizer
-numpy
-python -m pip install paddlepaddle-gpu==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu129/
-pypinyin
+--extra-index-url https://www.paddlepaddle.org.cn/packages/stable/cu129/
+
+Flask==3.1.2
+python-dotenv==1.1.1
+requests==2.32.5
+nltk==3.9.1
+flask-cors==6.0.1
+diskcache==5.6.3
+phonemizer==3.3.0
+numpy==2.2.6
+pypinyin==0.55.0
+paddleocr==3.2.0
+paddlepaddle-gpu==3.2.0; platform_system == "Windows"

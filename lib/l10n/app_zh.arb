@@ -62,5 +62,9 @@
     }
   },
   "search": "搜索…",
-  "delete": "删除"
+  "delete": "删除",
+  "no_mic_input": "未检测到麦克风输入",
+  "@no_mic_input": {},
+  "no_match": "没有与{lang}语言匹配的词语",
+  "@no_match": { "placeholders": { "lang": { "type": "String" } } }
 }

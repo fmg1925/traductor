@@ -129,4 +129,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get delete => 'Delete';
+
+  @override
+  String get no_mic_input => 'No microphone input detected';
+
+  @override
+  String no_match(String lang) {
+    return 'No words match in $lang language';
+  }
 }

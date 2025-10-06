@@ -14,10 +14,10 @@ class DataProvider {
   final RequestLimiter limiter;
 
   Uri get uri => kIsWeb
-      ? Uri.parse('http://localhost:3000')
+      ? Uri.parse('https://herpetologic-nonmelodiously-maudie.ngrok-free.dev')
       : (Platform.isAndroid
-          ? Uri.parse('http://10.0.2.2:3000')
-          : Uri.parse('http://localhost:3000'));
+          ? Uri.parse('https://herpetologic-nonmelodiously-maudie.ngrok-free.dev')
+          : Uri.parse('https://herpetologic-nonmelodiously-maudie.ngrok-free.dev'));
 
   void dispose() => _client.close();
 
@@ -27,7 +27,6 @@ class DataProvider {
         .timeout(const Duration(seconds: 15));
   }
 }
-
 
 Future<Translation> fetchTranslation(
   DataProvider provider,

@@ -62,5 +62,9 @@
     }
   },
   "search": "検索…",
-  "delete": "削除"
+  "delete": "削除",
+  "no_mic_input": "マイク入力が検出されませんでした",
+  "@no_mic_input": {},
+  "no_match": "{lang}で一致する単語が見つかりません",
+  "@no_match": { "placeholders": { "lang": { "type": "String" } } }
 }

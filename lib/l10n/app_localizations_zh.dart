@@ -128,4 +128,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get delete => '删除';
+
+  @override
+  String get no_mic_input => '未检测到麦克风输入';
+
+  @override
+  String no_match(String lang) {
+    return '没有与$lang语言匹配的词语';
+  }
 }

@@ -187,6 +187,7 @@ class _SearchField extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
       child: TextField(
         controller: controller,
+        style: TextStyle(color: scheme.onPrimary),
         decoration: InputDecoration(
           hintText: t.search,
           prefixIcon: const Icon(Icons.search),

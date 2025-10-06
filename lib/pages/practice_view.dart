@@ -51,7 +51,7 @@ class _PracticeViewState extends State<PracticeView> {
     sourceLang = widget.initialSourceLang;
     targetLang = widget.initialTargetLang;
 
-    if (isWindowsDesktop) _initSpeech();
+    if (!isWindowsDesktop) _initSpeech();
   }
 
   Future<void> _initSpeech() async {
@@ -80,13 +80,14 @@ class _PracticeViewState extends State<PracticeView> {
     try {
       await _speechToText.listen(
         onResult: _onSpeechResult,
-        localeId: targetLang,
+        localeId: ttsLocaleFor(targetLang),
         listenOptions: SpeechListenOptions(
-          listenMode: ListenMode.confirmation,
+          listenMode: ListenMode.dictation,
           partialResults: true,
           cancelOnError: true,
         ),
-        pauseFor: const Duration(seconds: 3),
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 10),
       );
       setState(() {});
     } catch (_) {
@@ -345,26 +346,26 @@ class TranslationsArea extends StatelessWidget {
       future: future,
       builder: (context, snap) {
         final t = AppLocalizations.of(context);
-
+        final scheme  = Theme.of(context).colorScheme;
         if (snap.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
         if (snap.hasError) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            PopUp.showPopUp(context, t.error, t.error_translation(snap.error!));
-          });
+          final t = AppLocalizations.of(context);
           return SingleChildScrollView(
             child: _tileRich(
               context,
               t.error,
               const SizedBox.shrink(),
-              color: Colors.red.shade50,
-              errorText: '${snap.error}',
+              errorText: t.error_translation('${snap.error}'),
+              color: scheme.primary,
+              onTts: () {},
               copyText: '${snap.error}',
             ),
           );
         }
+
 
         if (!snap.hasData) {
           return Padding(
@@ -496,6 +497,7 @@ class TranslationsArea extends StatelessWidget {
   }
 
   Widget voiceDetection(BuildContext context, AppLocalizations t) {
+    final scheme = Theme.of(context).colorScheme;
     final idleText = (listeningText.isNotEmpty)
         ? '$listeningText'
               '${lastAccuracy == null ? '' : '\n\n${t.accuracy}: ${lastAccuracy!.toStringAsFixed(1)}%'}'
@@ -530,6 +532,7 @@ class TranslationsArea extends StatelessWidget {
                       Text(
                         '${t.listening}\n\n$listeningText',
                         textAlign: TextAlign.center,
+                        style: TextStyle(color: scheme.onPrimary),
                       ),
                       const SizedBox(height: 8),
                       const Icon(Icons.stop_rounded, size: 48),
@@ -539,7 +542,7 @@ class TranslationsArea extends StatelessWidget {
                     key: const ValueKey('state_idle'),
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(idleText, textAlign: TextAlign.center),
+                      Text(idleText, textAlign: TextAlign.center, style: TextStyle(color: scheme.onPrimary)),
                       const SizedBox(height: 8),
                       const Icon(Icons.mic, size: 48),
                     ],
@@ -621,7 +624,6 @@ class TranslationsArea extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -631,7 +633,7 @@ class TranslationsArea extends StatelessWidget {
                   title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleMedium?.copyWith(height: 1.05),
+                  style: theme.textTheme.titleMedium?.copyWith(height: 1.05, color: theme.colorScheme.onPrimary),
                   textHeightBehavior: const TextHeightBehavior(
                     applyHeightToFirstAscent: true,
                     applyHeightToLastDescent: false,
@@ -641,13 +643,12 @@ class TranslationsArea extends StatelessWidget {
                 body,
                 if (errorText != null) ...[
                   const SizedBox(height: gap),
-                  Text(errorText, style: TextStyle(color: Colors.red.shade700)),
+                  Text(errorText, style: TextStyle(color: Colors.red)),
                 ],
               ],
             ),
           ),
 
-          // Right action rail (optional)
           if (hasRail) ...[
             const SizedBox(width: gap),
             SizedBox(width: railW, child: rail),
@@ -658,46 +659,43 @@ class TranslationsArea extends StatelessWidget {
   );
 }
 
-  Positioned rightButtons(
-    AppLocalizations t,
-    VoidCallback onTts,
-    String copyText,
-    BuildContext context,
-  ) {
-    return Positioned(
-      top: -5,
-      right: 0,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          IconButton.filledTonal(
-            icon: Icon(tts.getState() ? Icons.stop : Icons.volume_up),
-            tooltip: tts.getState() ? t.stop : t.listen,
-            onPressed: onTts,
-            iconSize: 20,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: 50, height: 50),
-            visualDensity: VisualDensity.compact,
-          ),
-          const SizedBox(height: 4),
-          IconButton.filledTonal(
-            icon: const Icon(Icons.copy_all),
-            tooltip: t.copy,
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: copyText));
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(SnackBar(content: Text(t.copied)));
-            },
-            iconSize: 20,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: 50, height: 50),
-            visualDensity: VisualDensity.compact,
-          ),
-        ],
+  Widget rightButtons(
+  AppLocalizations t,
+  VoidCallback onTts,
+  String copyText,
+  BuildContext context,
+) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.end,
+    children: [
+      IconButton.filledTonal(
+        icon: Icon(tts.getState() ? Icons.stop : Icons.volume_up),
+        tooltip: tts.getState() ? t.stop : t.listen,
+        onPressed: onTts,
+        iconSize: 20,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 50, height: 50),
+        visualDensity: VisualDensity.compact,
       ),
-    );
-  }
+      const SizedBox(height: 4),
+      IconButton.filledTonal(
+        icon: const Icon(Icons.copy_all),
+        tooltip: t.copy,
+        onPressed: () {
+          Clipboard.setData(ClipboardData(text: copyText));
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(t.copied)));
+        },
+        iconSize: 20,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 50, height: 50),
+        visualDensity: VisualDensity.compact,
+      ),
+    ],
+  );
+}
+
 
   Widget maxWidth({required Widget child}) => Center(
   child: ConstrainedBox(

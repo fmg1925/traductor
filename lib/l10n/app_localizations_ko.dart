@@ -128,4 +128,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get delete => '삭제';
+
+  @override
+  String get no_mic_input => '마이크 입력이 감지되지 않았습니다';
+
+  @override
+  String no_match(String lang) {
+    return '$lang 언어에서 일치하는 단어가 없습니다';
+  }
 }

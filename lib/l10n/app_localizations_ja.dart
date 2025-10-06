@@ -128,4 +128,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get delete => '削除';
+
+  @override
+  String get no_mic_input => 'マイク入力が検出されませんでした';
+
+  @override
+  String no_match(String lang) {
+    return '$langで一致する単語が見つかりません';
+  }
 }

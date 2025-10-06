@@ -325,6 +325,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete'**
   String get delete;
+
+  /// No description provided for @no_mic_input.
+  ///
+  /// In en, this message translates to:
+  /// **'No microphone input detected'**
+  String get no_mic_input;
+
+  /// No description provided for @no_match.
+  ///
+  /// In en, this message translates to:
+  /// **'No words match in {lang} language'**
+  String no_match(String lang);
 }
 
 class _AppLocalizationsDelegate
