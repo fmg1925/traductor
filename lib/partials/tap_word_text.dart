@@ -63,9 +63,9 @@ class _TapWordTextState extends State<TapWordText> {
 
   bool _isLetter(int rune) {
     return (rune >= 0x0041 && rune <= 0x024F) ||
-           (rune >= 0x3040 && rune <= 0x30FF) ||
-           (rune >= 0x4E00 && rune <= 0x9FFF) ||
-           (rune >= 0xAC00 && rune <= 0xD7AF);
+        (rune >= 0x3040 && rune <= 0x30FF) ||
+        (rune >= 0x4E00 && rune <= 0x9FFF) ||
+        (rune >= 0xAC00 && rune <= 0xD7AF);
   }
 
   (List<String> tokens, List<int> wordTokenIndexes) _tokenize(String input) {
@@ -101,7 +101,7 @@ class _TapWordTextState extends State<TapWordText> {
   bool translating = false;
 
   Future<void> _onTapWord(String token) async {
-    if(translating) return;
+    if (translating) return;
     final trim = token.trim();
     if (trim.isEmpty) return;
 
@@ -115,18 +115,28 @@ class _TapWordTextState extends State<TapWordText> {
 
     try {
       translating = true;
-      final result = await WordCache.get(trim, effectiveOrigin, effectiveTarget);
+      final result = await WordCache.get(
+        trim,
+        effectiveOrigin,
+        effectiveTarget,
+      );
       if (!mounted) return;
       final scheme = Theme.of(context).colorScheme;
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: Text('“$trim” → $effectiveTarget', style: TextStyle(color: scheme.onPrimary)),
-          content: Text((result == null || result.isEmpty) ? '—' : result, style: TextStyle(color: scheme.onPrimary)),
+          title: Text(
+            '“$trim” → $effectiveTarget',
+            style: TextStyle(color: scheme.onPrimary),
+          ),
+          content: Text(
+            (result == null || result.isEmpty) ? '—' : result,
+            style: TextStyle(color: scheme.onPrimary),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+              child: Text('OK', style: TextStyle(color: scheme.secondary)),
             ),
           ],
         ),
@@ -144,10 +154,21 @@ class _TapWordTextState extends State<TapWordText> {
     final (tokens, wordTokenIndexes) = _tokenize(widget.text);
 
     final defaultStyle = DefaultTextStyle.of(context).style;
-    final wordStyle = widget.wordStyle ??
-        defaultStyle.copyWith(fontSize: 16, height: 1.15, color: Colors.black87, fontWeight: FontWeight.w600);
-    final ipaStyle = widget.ipaStyle ??
-        defaultStyle.copyWith(fontSize: 13, height: 1.15, color: const Color(0xFF424242));
+    final wordStyle =
+        widget.wordStyle ??
+        defaultStyle.copyWith(
+          fontSize: 16,
+          height: 1.15,
+          color: Colors.black87,
+          fontWeight: FontWeight.w600,
+        );
+    final ipaStyle =
+        widget.ipaStyle ??
+        defaultStyle.copyWith(
+          fontSize: 13,
+          height: 1.15,
+          color: const Color(0xFF424242),
+        );
 
     final ipa = widget.ipaPerWord ?? const <String>[];
     int wordCounter = 0;
@@ -158,7 +179,9 @@ class _TapWordTextState extends State<TapWordText> {
       final isWordToken = wordTokenIndexes.contains(i);
 
       if (isWordToken) {
-        final ipaForThisWord = (wordCounter < ipa.length) ? ipa[wordCounter] : '';
+        final ipaForThisWord = (wordCounter < ipa.length)
+            ? ipa[wordCounter]
+            : '';
         wordCounter++;
 
         final rec = TapGestureRecognizer()..onTap = () => _onTapWord(tk);
@@ -170,7 +193,14 @@ class _TapWordTextState extends State<TapWordText> {
             Text(tk, style: wordStyle, textAlign: TextAlign.center),
             SizedBox(height: widget.gap),
             if (ipaForThisWord.isNotEmpty)
-              Text(ipaForThisWord, style: ipaStyle, textAlign: TextAlign.center, softWrap: false, maxLines: 1, overflow: TextOverflow.visible),
+              Text(
+                ipaForThisWord,
+                style: ipaStyle,
+                textAlign: TextAlign.center,
+                softWrap: false,
+                maxLines: 1,
+                overflow: TextOverflow.visible,
+              ),
           ],
         );
 
@@ -180,13 +210,12 @@ class _TapWordTextState extends State<TapWordText> {
               alignment: Alignment.topLeft,
               child: MouseRegion(
                 cursor: SystemMouseCursors.click,
-                child:  
-                GestureDetector(
-                onTap: () => _onTapWord(tk),
-                behavior: HitTestBehavior.opaque,
-                child: column,
+                child: GestureDetector(
+                  onTap: () => _onTapWord(tk),
+                  behavior: HitTestBehavior.opaque,
+                  child: column,
+                ),
               ),
-            ),
             ),
           ),
         );

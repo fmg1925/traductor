@@ -136,4 +136,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String no_match(String lang) {
     return '$lang 언어에서 일치하는 단어가 없습니다';
   }
+
+  @override
+  String get not_allowed => '마이크 권한이 없습니다';
+
+  @override
+  String get unsupported_browser => '지원되지 않는 브라우저';
+
+  @override
+  String get light => '라이트';
+
+  @override
+  String get dark => '다크';
+
+  @override
+  String get system => '시스템';
+
+  @override
+  String get generate_for_practice => '연습을 시작할 문구를 생성';
 }

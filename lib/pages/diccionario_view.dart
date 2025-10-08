@@ -27,11 +27,15 @@ class _DiccionarioViewState extends State<DiccionarioView> {
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
-        title: 
-          Text(t.dictionary, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: scheme.onPrimary, fontSize: 24)),
-        actions: [
-          const SizedBox(width: 8),
-        ],
+        title: Text(
+          t.dictionary,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: scheme.onPrimary,
+            fontSize: 24,
+          ),
+        ),
+        actions: [const SizedBox(width: 8)],
       ),
       body: ValueListenableBuilder<Box<String>>(
         valueListenable: box.listenable(),
@@ -49,8 +53,7 @@ class _DiccionarioViewState extends State<DiccionarioView> {
             final k = e.key.toLowerCase();
             final v = e.value.toLowerCase();
             return k.contains(q) || v.contains(q);
-          }).toList()
-            ..sort((a, b) => a.key.compareTo(b.key));
+          }).toList()..sort((a, b) => a.key.compareTo(b.key));
 
           if (entries.isEmpty) {
             return Padding(
@@ -58,12 +61,18 @@ class _DiccionarioViewState extends State<DiccionarioView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.menu_book_outlined, size: 64, color: scheme.onSurfaceVariant),
+                  Icon(
+                    Icons.menu_book_outlined,
+                    size: 64,
+                    color: scheme.onSurfaceVariant,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     t.no_words,
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.titleMedium?.copyWith(color: scheme.onPrimary),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: scheme.onPrimary,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   _SearchField(controller: _search),
@@ -102,10 +111,16 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                 child: Card(
                   clipBehavior: Clip.antiAlias,
                   child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     title: RichText(
                       text: TextSpan(
-                        style: theme.textTheme.titleMedium?.copyWith(color: scheme.onSurface, height: 1.2),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: scheme.onSurface,
+                          height: 1.2,
+                        ),
                         children: [
                           TextSpan(text: word),
                           TextSpan(
@@ -117,7 +132,10 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                           ),
                           TextSpan(
                             text: e.value,
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: scheme.onPrimary),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: scheme.onPrimary,
+                            ),
                           ),
                         ],
                       ),
@@ -127,14 +145,19 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: scheme.secondaryContainer,
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
                             path,
-                            style: theme.textTheme.labelMedium?.copyWith(color: scheme.onSecondaryContainer),
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: scheme.onSecondaryContainer,
+                            ),
                           ),
                         ),
                       ),
@@ -148,7 +171,9 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                           showDragHandle: true,
                           backgroundColor: theme.colorScheme.surface,
                           shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
                           ),
                           builder: (ctx) => SafeArea(
                             child: ListTile(

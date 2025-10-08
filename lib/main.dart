@@ -137,7 +137,6 @@ const _darkPinkContainer = Color.fromARGB(166, 163, 11, 64);
 
 ThemeData appTheme(Brightness brightness) {
   final base = ColorScheme.fromSeed(seedColor: _seed, brightness: brightness);
-
   final scheme = (brightness == Brightness.dark)
       ? base.copyWith(
           primary: Color.fromARGB(100, 0, 0, 0),
@@ -147,7 +146,10 @@ ThemeData appTheme(Brightness brightness) {
           primaryContainer: _darkPinkContainer,
           onPrimaryContainer: const Color.fromARGB(255, 217, 255, 246),
           secondaryContainer: const Color.fromARGB(145, 233, 30, 128),
-          tertiary: const Color.from(alpha: 0, red: 0, green: 0, blue: 0)
+          tertiary: const Color.from(alpha: 0, red: 0, green: 0, blue: 0),
+          tertiaryContainer: const Color.fromARGB(0, 0, 0, 0),
+          tertiaryFixed: Colors.white,
+          onTertiary: Color(0xFF191113)
         )
       : base.copyWith(
           primary: const Color.fromARGB(255, 255, 255, 255),
@@ -158,7 +160,10 @@ ThemeData appTheme(Brightness brightness) {
           onPrimaryContainer: const Color(0xFF5A0018),
           secondaryContainer: const Color.fromARGB(255, 255, 255, 255),
           surface: _seed,
-          tertiary: const Color.fromARGB(20, 0, 0, 0)
+          tertiary: const Color.fromARGB(20, 0, 0, 0),
+          tertiaryContainer: Colors.white,
+          tertiaryFixed: Colors.white,
+          onTertiary: Color(0xFFFF007F),
         );
 
   return ThemeData(

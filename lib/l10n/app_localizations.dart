@@ -337,6 +337,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No words match in {lang} language'**
   String no_match(String lang);
+
+  /// No description provided for @not_allowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone permission denied'**
+  String get not_allowed;
+
+  /// No description provided for @unsupported_browser.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported browser'**
+  String get unsupported_browser;
+
+  /// No description provided for @light.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get light;
+
+  /// No description provided for @dark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get dark;
+
+  /// No description provided for @system.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get system;
+
+  /// No description provided for @generate_for_practice.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a phrase to start practicing'**
+  String get generate_for_practice;
 }
 
 class _AppLocalizationsDelegate

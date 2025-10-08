@@ -137,4 +137,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String no_match(String lang) {
     return 'No words match in $lang language';
   }
+
+  @override
+  String get not_allowed => 'Microphone permission denied';
+
+  @override
+  String get unsupported_browser => 'Unsupported browser';
+
+  @override
+  String get light => 'Light';
+
+  @override
+  String get dark => 'Dark';
+
+  @override
+  String get system => 'System';
+
+  @override
+  String get generate_for_practice => 'Generate a phrase to start practicing';
 }

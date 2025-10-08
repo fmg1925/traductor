@@ -11,3 +11,7 @@ numpy==2.2.6
 pypinyin==0.55.0
 paddleocr==3.2.0
 paddlepaddle-gpu==3.2.0; platform_system == "Windows"
+eunjeon=0.4.0
+g2pk2==0.0.3
+epitran==1.26.0
+regex==2025.9.18

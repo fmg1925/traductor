@@ -136,4 +136,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String no_match(String lang) {
     return '没有与$lang语言匹配的词语';
   }
+
+  @override
+  String get not_allowed => '没有麦克风权限';
+
+  @override
+  String get unsupported_browser => '不支持的浏览器';
+
+  @override
+  String get light => '浅色';
+
+  @override
+  String get dark => '深色';
+
+  @override
+  String get system => '系统';
+
+  @override
+  String get generate_for_practice => '生成一个用于开始练习的短语';
 }

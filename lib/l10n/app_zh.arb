@@ -64,7 +64,12 @@
   "search": "搜索…",
   "delete": "删除",
   "no_mic_input": "未检测到麦克风输入",
-  "@no_mic_input": {},
   "no_match": "没有与{lang}语言匹配的词语",
-  "@no_match": { "placeholders": { "lang": { "type": "String" } } }
+  "@no_match": { "placeholders": { "lang": { "type": "String" } } },
+  "not_allowed": "没有麦克风权限",
+  "unsupported_browser": "不支持的浏览器",
+  "light": "浅色",
+  "dark": "深色",
+  "system": "系统",
+  "generate_for_practice": "生成一个用于开始练习的短语"
 }

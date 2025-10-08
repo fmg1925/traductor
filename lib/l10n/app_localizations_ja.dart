@@ -136,4 +136,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String no_match(String lang) {
     return '$langで一致する単語が見つかりません';
   }
+
+  @override
+  String get not_allowed => 'マイクの許可がありません';
+
+  @override
+  String get unsupported_browser => 'サポートされていないブラウザです';
+
+  @override
+  String get light => 'ライト';
+
+  @override
+  String get dark => 'ダーク';
+
+  @override
+  String get system => 'システム';
+
+  @override
+  String get generate_for_practice => '練習を始めるためのフレーズを生成';
 }

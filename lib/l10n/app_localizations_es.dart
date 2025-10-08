@@ -137,4 +137,23 @@ class AppLocalizationsEs extends AppLocalizations {
   String no_match(String lang) {
     return 'No hay palabras que coincidan en el idioma $lang';
   }
+
+  @override
+  String get not_allowed => 'Sin permiso de micrófono';
+
+  @override
+  String get unsupported_browser => 'Navegador no soportado';
+
+  @override
+  String get light => 'Claro';
+
+  @override
+  String get dark => 'Oscuro';
+
+  @override
+  String get system => 'Sistema';
+
+  @override
+  String get generate_for_practice =>
+      'Genera una frase para empezar a practicar';
 }

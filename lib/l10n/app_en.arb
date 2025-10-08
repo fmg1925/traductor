@@ -64,7 +64,12 @@
   "search": "Search…",
   "delete": "Delete",
   "no_mic_input": "No microphone input detected",
-  "@no_mic_input": {},
   "no_match": "No words match in {lang} language",
-  "@no_match": { "placeholders": { "lang": { "type": "String" } } }
+  "@no_match": { "placeholders": { "lang": { "type": "String" } } },
+  "not_allowed": "Microphone permission denied",
+  "unsupported_browser": "Unsupported browser",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System",
+  "generate_for_practice": "Generate a phrase to start practicing"
 }

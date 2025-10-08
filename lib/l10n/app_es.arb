@@ -64,7 +64,12 @@
   "search": "Buscar…",
   "delete": "Eliminar",
   "no_mic_input": "No se detectó entrada de micrófono",
-  "@no_mic_input": {},
   "no_match": "No hay palabras que coincidan en el idioma {lang}",
-  "@no_match": { "placeholders": { "lang": { "type": "String" } } }
+  "@no_match": { "placeholders": { "lang": { "type": "String" } } },
+  "not_allowed": "Sin permiso de micrófono",
+  "unsupported_browser": "Navegador no soportado",
+  "light": "Claro",
+  "dark": "Oscuro",
+  "system": "Sistema",
+  "generate_for_practice": "Genera una frase para empezar a practicar"
 }

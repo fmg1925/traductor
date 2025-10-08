@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
   int index = 0;
 
   final SpeechToText _speechToText = SpeechToText();
-  bool _speechEnabled = false;
+  final ValueNotifier<bool> _speechEnabled = ValueNotifier(false);
   bool _speechListening = false;
 
   final box = Hive.box<String>('prefs');
@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _initSpeech() async {
     try {
-      _speechEnabled = await _speechToText.initialize(
+      _speechEnabled.value = await _speechToText.initialize(
         onStatus: (status) {
           if (!mounted) return;
           setState(() {});
@@ -66,54 +66,81 @@ class _HomePageState extends State<HomePage> {
         onError: (e) {
           if (!mounted) return;
           final t = AppLocalizations.of(context);
-          PopUp.showPopUp(context, t.error, t.error_stt(e.errorMsg));
-          setState(() {});
+          final langs = languages(context);
+          final langName = langs[sourceLang];
+          switch (e.errorMsg) {
+            case 'not-allowed':
+              PopUp.showPopUp(context, t.error, t.not_allowed);
+              break;
+            case 'network':
+              PopUp.showPopUp(context, t.error, t.unsupported_browser);
+              break;
+            case 'no-speech':
+              PopUp.showPopUp(context, t.error, t.no_mic_input);
+              break;
+            case 'no-match':
+              PopUp.showPopUp(context, t.error, t.no_match(langName!));
+              break;
+            default:
+              PopUp.showPopUp(context, t.error, t.error_stt(e));
+              break;
+          }
+          setState(() {
+            _speechListening = false;
+          });
         },
       );
-    } catch (_) {
-      _speechEnabled = false;
+    } catch (e) {
+      setState(() {
+        _speechListening = false;
+        _speechEnabled.value = false;
+      });
     } finally {
       if (mounted) setState(() {});
     }
   }
 
   Future<void> _startListening() async {
-    if (!mounted || !_speechEnabled || _speechToText.isListening) return;
+    if (!mounted || !_speechEnabled.value) return;
+    if (_speechToText.isListening) return;
     try {
+      _speechListening = true;
       await _speechToText.listen(
         onResult: _onSpeechResult,
         localeId: ttsLocaleFor(sourceLang),
         listenOptions: SpeechListenOptions(
-          listenMode: ListenMode.dictation,
+          listenMode: ListenMode.confirmation,
           partialResults: true,
           cancelOnError: true,
         ),
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 10),
       );
-      setState(() {});
-    } catch (_) {
-      setState(() {});
+      if (mounted) setState(() {});
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _speechListening = false;
+        });
+      }
     }
   }
 
   Future<void> _stopListening() async {
-    if (!mounted || !_speechEnabled || !_speechToText.isListening) return;
+    if (!mounted || !_speechEnabled.value) return;
     try {
       await _speechToText.stop();
+      await _speechToText.cancel();
     } catch (e) {
+      if (!mounted) return;
+      debugPrint(e.toString());
+    } finally {
       if (mounted) {
-        final t = AppLocalizations.of(context);
-        PopUp.showPopUp(context, t.error, t.error_stt(e.toString()));
         setState(() {
           _speechListening = false;
+          _speechToText.cancel();
         });
-        return;
       }
-    } finally {
-      setState(() {
-        _speechListening = false;
-      });
     }
   }
 
@@ -200,9 +227,11 @@ class _HomePageState extends State<HomePage> {
           children: [
             mainColumn(),
             PracticeView(
+              speechToText: _speechToText,
               provider: provider,
               initialSourceLang: sourceLang,
               initialTargetLang: targetLang,
+              speechEnabled: _speechEnabled,
             ),
             const DiccionarioView(),
           ],
@@ -232,25 +261,29 @@ class _HomePageState extends State<HomePage> {
   Widget themeModeMenu() {
     final box = Hive.box<String>('prefs');
     final current = (box.get('themeMode') ?? 'system').toLowerCase();
+    final isLight = current == 'light';
+    final t = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
     return PopupMenuButton<String>(
       tooltip: 'Theme',
-      icon: const Icon(Icons.brightness_6),
+      color: scheme.primary,
+      icon: Icon(Icons.brightness_6, color: isLight ? Colors.black87 : null),
       onSelected: (v) => box.put('themeMode', v),
       itemBuilder: (ctx) => [
         CheckedPopupMenuItem(
           value: 'system',
           checked: current == 'system',
-          child: const Text('System'),
+          child: Text(t.system),
         ),
         CheckedPopupMenuItem(
           value: 'light',
           checked: current == 'light',
-          child: const Text('Light'),
+          child: Text(t.light),
         ),
         CheckedPopupMenuItem(
           value: 'dark',
           checked: current == 'dark',
-          child: const Text('Dark'),
+          child: Text(t.dark),
         ),
       ],
     );
@@ -281,8 +314,8 @@ class _HomePageState extends State<HomePage> {
                     value: selectedLocale,
                     isExpanded: true,
                     itemHeight: 48,
-                    borderRadius: BorderRadius.circular(12), // rounded menu
-                    dropdownColor: scheme.surface, // menu sheet color
+                    borderRadius: BorderRadius.circular(12),
+                    dropdownColor: scheme.primary,
                     iconEnabledColor: scheme.onSurfaceVariant,
                     iconDisabledColor: theme.disabledColor,
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -339,10 +372,9 @@ class _HomePageState extends State<HomePage> {
         style: TextStyle(color: scheme.onPrimary),
         decoration: InputDecoration(
           filled: true,
-          fillColor: scheme.onInverseSurface,
+          fillColor: scheme.tertiaryContainer,
           hintText: t.main_hint,
-          border: const OutlineInputBorder(
-            borderSide: BorderSide.none,
+          border: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
           contentPadding: const EdgeInsets.symmetric(
@@ -363,7 +395,7 @@ class _HomePageState extends State<HomePage> {
               _speechListening ? Icons.mic_none : Icons.mic,
               color: isWindowsDesktop ? Colors.grey : null,
             ),
-            onPressed: !_speechEnabled
+            onPressed: !_speechEnabled.value
                 ? null
                 : () async {
                     if (isWindowsDesktop) {
@@ -380,6 +412,8 @@ class _HomePageState extends State<HomePage> {
                   },
           ),
         ),
+        maxLength: 50,
+        cursorColor: scheme.secondary,
       ),
     );
   }
@@ -427,7 +461,7 @@ class _HomePageState extends State<HomePage> {
             isExpanded: true,
             borderRadius: BorderRadius.circular(12),
             underline: const SizedBox.shrink(),
-            dropdownColor: scheme.surface,
+            dropdownColor: scheme.primary,
             iconEnabledColor: scheme.onSurfaceVariant,
             iconDisabledColor: theme.disabledColor,
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -482,7 +516,7 @@ class _HomePageState extends State<HomePage> {
   Padding generarButton() {
     final t = AppLocalizations.of(context);
     final isEmpty = _controller.text.trim().isEmpty;
-    final scheme  = Theme.of(context).colorScheme;
+    final scheme = Theme.of(context).colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -493,13 +527,21 @@ class _HomePageState extends State<HomePage> {
             onPressed: _generar,
             icon: const Icon(Icons.play_arrow),
             label: Text(isEmpty ? t.generate_translation : t.translate),
-            style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(scheme.secondaryContainer)),
+            style: ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(
+                scheme.secondaryContainer,
+              ),
+            ),
           ),
           FilledButton.icon(
             onPressed: _ocr,
             icon: const Icon(Icons.document_scanner),
             label: const Text('OCR'),
-            style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(scheme.secondaryContainer)),
+            style: ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(
+                scheme.secondaryContainer,
+              ),
+            ),
           ),
         ],
       ),
@@ -508,9 +550,11 @@ class _HomePageState extends State<HomePage> {
 
   NavigationBar bottomNavBar() {
     final t = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
     return NavigationBar(
+      backgroundColor: scheme.primary,
       selectedIndex: index,
-      indicatorColor: Theme.of(context).colorScheme.secondaryContainer,
+      indicatorColor: Theme.of(context).colorScheme.onTertiary,
       onDestinationSelected: (i) {
         if (isWindowsDesktop && i == 1) {
           PopUp.showPopUp(
@@ -558,12 +602,11 @@ class TranslationsArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    final scheme = Theme.of(context).colorScheme;
     if (future == null) {
       return Center(
         child: Text(
           t.main_hint,
-          style: TextStyle(color: scheme.onPrimary, fontSize: 16),
+          style: TextStyle(color: Colors.white, fontSize: 24),
           textAlign: TextAlign.center,
         ),
       );
@@ -577,9 +620,11 @@ class TranslationsArea extends StatelessWidget {
       future: future,
       builder: (context, snap) {
         final t = AppLocalizations.of(context);
-        final scheme  = Theme.of(context).colorScheme;
+        final scheme = Theme.of(context).colorScheme;
         if (snap.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+            child: CircularProgressIndicator(color: scheme.onPrimary),
+          );
         }
         if (snap.hasError) {
           final t = AppLocalizations.of(context);
@@ -612,6 +657,7 @@ class TranslationsArea extends StatelessWidget {
             _tileRich(
               context,
               '${t.original} (${item.detectedLanguage})',
+              color: scheme.primary,
               TapWordText(
                 text: item.originalText,
                 targetLang: targetLang,
@@ -651,6 +697,7 @@ class TranslationsArea extends StatelessWidget {
             _tileRich(
               context,
               t.translation,
+              color: scheme.primary,
               TapWordText(
                 text: item.translatedText,
                 targetLang: item.detectedLanguage,
@@ -694,120 +741,126 @@ class TranslationsArea extends StatelessWidget {
   }
 
   Widget _tileRich(
-  BuildContext context,
-  String title,
-  Widget body, {
-  Color? color,
-  Color? foregroundColor,
-  String? errorText,
-  required VoidCallback onTts,
-  required String copyText,
-}) {
-  final theme = Theme.of(context);
-  final scheme = theme.colorScheme;
+    BuildContext context,
+    String title,
+    Widget body, {
+    Color? color,
+    Color? foregroundColor,
+    String? errorText,
+    required VoidCallback onTts,
+    required String copyText,
+  }) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
-  final bg = color ?? scheme.surface;
-  final fg = foregroundColor ?? scheme.onSurface;
+    final bg = color ?? scheme.surface;
+    final fg = foregroundColor ?? scheme.onSurface;
 
-  const railW = 48.0;
-  const gap   = 12.0;
+    const railW = 48.0;
+    const gap = 12.0;
 
-  final t = AppLocalizations.of(context);
+    final t = AppLocalizations.of(context);
 
-  final localTheme = theme.copyWith(
-    textTheme: theme.textTheme.apply(
-      bodyColor: bg,
-      displayColor: fg,
-      decorationColor: fg,
-    ),
-  );
-
-  return maxWidth(
-    child: Container(
-      constraints: const BoxConstraints(minHeight: 100),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.dividerColor),
+    final localTheme = theme.copyWith(
+      textTheme: theme.textTheme.apply(
+        bodyColor: bg,
+        displayColor: fg,
+        decorationColor: fg,
       ),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Theme(
-        data: localTheme,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 4),
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      height: 1.05,
-                      color: theme.colorScheme.onPrimary,
-                    ),
-                    textHeightBehavior: const TextHeightBehavior(
-                      applyHeightToFirstAscent: true,
-                      applyHeightToLastDescent: false,
-                    ),
-                  ),
-                  const SizedBox(height: gap),
-                  body,
-                  if (errorText != null) ...[
-                    const SizedBox(height: gap),
-                    Text(errorText, style: TextStyle(color: Colors.red)),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(width: gap),
-            SizedBox(
-              width: railW,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  IconButton.filledTonal(
-                    icon: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 150),
-                      child: Icon(
-                        tts.getState() ? Icons.stop : Icons.volume_up,
-                        key: ValueKey(tts.getState()),
+    );
+
+    return maxWidth(
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 100),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: Theme(
+          data: localTheme,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 4),
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        height: 1.05,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                      textHeightBehavior: const TextHeightBehavior(
+                        applyHeightToFirstAscent: true,
+                        applyHeightToLastDescent: false,
                       ),
                     ),
-                    tooltip: tts.getState() ? t.stop : t.listen,
-                    onPressed: onTts,
-                    iconSize: 20,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints.tightFor(width: railW, height: railW),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                  const SizedBox(height: 8),
-                  IconButton.filledTonal(
-                    icon: const Icon(Icons.copy_all),
-                    tooltip: t.copy,
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: copyText));
-                      ScaffoldMessenger.of(context)
-                        ..hideCurrentSnackBar()
-                        ..showSnackBar(SnackBar(content: Text(t.copied)));
-                    },
-                    iconSize: 20,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints.tightFor(width: railW, height: railW),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ],
+                    const SizedBox(height: gap),
+                    body,
+                    if (errorText != null) ...[
+                      const SizedBox(height: gap),
+                      Text(errorText, style: TextStyle(color: Colors.red)),
+                    ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: gap),
+              SizedBox(
+                width: railW,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    IconButton.filledTonal(
+                      icon: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 150),
+                        child: Icon(
+                          tts.getState() ? Icons.stop : Icons.volume_up,
+                          key: ValueKey(tts.getState()),
+                        ),
+                      ),
+                      tooltip: tts.getState() ? t.stop : t.listen,
+                      onPressed: onTts,
+                      iconSize: 20,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: railW,
+                        height: railW,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    const SizedBox(height: 8),
+                    IconButton.filledTonal(
+                      icon: const Icon(Icons.copy_all),
+                      tooltip: t.copy,
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: copyText));
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(SnackBar(content: Text(t.copied)));
+                      },
+                      iconSize: 20,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: railW,
+                        height: railW,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Positioned rightButtons(
     AppLocalizations t,

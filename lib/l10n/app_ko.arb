@@ -64,7 +64,12 @@
   "search": "검색…",
   "delete": "삭제",
   "no_mic_input": "마이크 입력이 감지되지 않았습니다",
-  "@no_mic_input": {},
   "no_match": "{lang} 언어에서 일치하는 단어가 없습니다",
-  "@no_match": { "placeholders": { "lang": { "type": "String" } } }
+  "@no_match": { "placeholders": { "lang": { "type": "String" } } },
+  "not_allowed": "마이크 권한이 없습니다",
+  "unsupported_browser": "지원되지 않는 브라우저",
+  "light": "라이트",
+  "dark": "다크",
+  "system": "시스템",
+  "generate_for_practice": "연습을 시작할 문구를 생성"
 }
