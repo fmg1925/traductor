@@ -149,7 +149,8 @@ ThemeData appTheme(Brightness brightness) {
           tertiary: const Color.from(alpha: 0, red: 0, green: 0, blue: 0),
           tertiaryContainer: const Color.fromARGB(0, 0, 0, 0),
           tertiaryFixed: Colors.white,
-          onTertiary: Color(0xFF191113)
+          onTertiary: Color(0xFF191113),
+          onTertiaryFixed: Colors.white,
         )
       : base.copyWith(
           primary: const Color.fromARGB(255, 255, 255, 255),
@@ -164,6 +165,7 @@ ThemeData appTheme(Brightness brightness) {
           tertiaryContainer: Colors.white,
           tertiaryFixed: Colors.white,
           onTertiary: Color(0xFFFF007F),
+          onTertiaryFixed: Color(0xFFFF007F),
         );
 
   return ThemeData(
