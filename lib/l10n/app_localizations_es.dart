@@ -156,4 +156,28 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get generate_for_practice =>
       'Genera una frase para empezar a practicar';
+
+  @override
+  String get frase => 'Frase';
+
+  @override
+  String get sujeto => 'Sujeto';
+
+  @override
+  String get verbo => 'Verbo';
+
+  @override
+  String get color => 'Color';
+
+  @override
+  String get familia => 'Familia';
+
+  @override
+  String get adjetivo => 'Adjetivo';
+
+  @override
+  String get direccion => 'Direcciones';
+
+  @override
+  String get retraducir => 'Retraducir';
 }

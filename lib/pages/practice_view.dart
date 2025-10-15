@@ -7,7 +7,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:traductor/entities/translation.dart';
 import 'package:traductor/helpers/popup.dart';
 import 'package:traductor/main.dart';
-import 'package:traductor/pages/home.dart' show tts;
+import 'package:traductor/pages/home.dart' show tts, tipoGeneracion;
 import 'package:traductor/partials/tap_word_text.dart';
 import 'package:traductor/partials/tile_rich.dart';
 import '../domain/providers/data_provider.dart';
@@ -163,7 +163,7 @@ class _PracticeViewState extends State<PracticeView> {
 
   void _generar() {
     setState(() {
-      translationFuture = fetchTranslation(provider, sourceLang, targetLang);
+      translationFuture = fetchTranslation(provider, sourceLang, targetLang, tipoGeneracion);
     });
   }
 
@@ -422,6 +422,7 @@ class TranslationsArea extends StatelessWidget {
         targetLang: targetLang,
         sourceLang: item.detectedLanguage,
         ipaPerWord: item.originalIpa,
+        romanizationPerWord: item.originalRomanization,
         wordStyle: wordStyle(context),
         ipaStyle: ipaStyle(context),
       ),
@@ -429,7 +430,7 @@ class TranslationsArea extends StatelessWidget {
       buttons: rightButtons(
         t,
         () async {
-          if (tts.getState() == true) {
+          if (tts.speaking.value) {
             await tts.stop();
             return;
           }
@@ -474,6 +475,7 @@ class TranslationsArea extends StatelessWidget {
         targetLang: item.detectedLanguage,
         sourceLang: item.target,
         ipaPerWord: item.translatedIpa,
+        romanizationPerWord: item.translatedRomanization,
         wordStyle: wordStyle(context),
         ipaStyle: ipaStyle(context),
       ),
@@ -482,7 +484,7 @@ class TranslationsArea extends StatelessWidget {
       buttons: rightButtons(
         t,
         () async {
-          if (tts.getState() == true) {
+          if (tts.speaking.value) {
             await tts.stop();
             return;
           }
@@ -582,14 +584,19 @@ class TranslationsArea extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        IconButton.filledTonal(
-          icon: Icon(tts.getState() ? Icons.stop : Icons.volume_up),
-          tooltip: tts.getState() ? t.stop : t.listen,
-          onPressed: onTts,
-          iconSize: 20,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints.tightFor(width: 50, height: 50),
-          visualDensity: VisualDensity.compact,
+        ValueListenableBuilder(
+          valueListenable: tts.speaking,
+          builder: (context, isSpeaking, _) {
+            return IconButton.filledTonal(
+              icon: Icon(isSpeaking ? Icons.stop : Icons.volume_up),
+              tooltip: isSpeaking ? t.stop : t.listen,
+              onPressed: onTts,
+              iconSize: 20,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 50, height: 50),
+              visualDensity: VisualDensity.compact,
+            );
+          }
         ),
         const SizedBox(height: 4),
         IconButton.filledTonal(

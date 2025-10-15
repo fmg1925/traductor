@@ -7,13 +7,21 @@ class TapWordText extends StatefulWidget {
   final String sourceLang;
 
   final List<String>? romanizationPerWord;
+
   final List<String>? ipaPerWord;
+
+  final bool showPerWordRomanization;
+
+  final bool showPerWordIpa;
 
   final bool inverse;
   final TextStyle? wordStyle;
   final TextStyle? ipaStyle;
+
   final double gap;
+
   final double hSpacing;
+
   final double vSpacing;
 
   const TapWordText({
@@ -23,6 +31,8 @@ class TapWordText extends StatefulWidget {
     required this.sourceLang,
     this.romanizationPerWord,
     this.ipaPerWord,
+    this.showPerWordRomanization = true,
+    this.showPerWordIpa = true,
     this.inverse = false,
     this.wordStyle,
     this.ipaStyle,
@@ -38,17 +48,13 @@ class TapWordText extends StatefulWidget {
 class _TapWordTextState extends State<TapWordText> {
   bool translating = false;
 
-  @override
-  void didUpdateWidget(covariant TapWordText oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // nada que limpiar ya que no guardamos recognizers ni cache local
-  }
+  int? _loadingWordIndex;
 
   bool _isLetter(int rune) {
-    return (rune >= 0x0041 && rune <= 0x024F) || // Latin + extendido
-           (rune >= 0x3040 && rune <= 0x30FF) || // Hiragana/Katakana
-           (rune >= 0x4E00 && rune <= 0x9FFF) || // CJK
-           (rune >= 0xAC00 && rune <= 0xD7AF);   // Hangul
+    return (rune >= 0x0041 && rune <= 0x024F) ||
+        (rune >= 0x3040 && rune <= 0x30FF) ||
+        (rune >= 0x4E00 && rune <= 0x9FFF) ||
+        (rune >= 0xAC00 && rune <= 0xD7AF);
   }
 
   (List<String> tokens, List<int> wordTokenIndexes) _tokenize(String input) {
@@ -56,7 +62,6 @@ class _TapWordTextState extends State<TapWordText> {
     final tokens = <String>[];
     final wordIdxs = <int>[];
     if (runes.isEmpty) return (tokens, wordIdxs);
-
     final sb = StringBuffer();
     bool inWord = _isLetter(runes.first);
 
@@ -81,139 +86,140 @@ class _TapWordTextState extends State<TapWordText> {
     return (tokens, wordIdxs);
   }
 
-  Future<void> _onTapWord(String token) async {
-    if (translating) return;
-    final trim = token.trim();
-    if (trim.isEmpty) return;
+  Future<void> _onTapWord(String token, int wordIndex) async {
+  if (_loadingWordIndex != null) return;
+  final trim = token.trim();
+  if (trim.isEmpty) return;
 
-    final effectiveTarget = widget.inverse ? widget.sourceLang : widget.targetLang;
-    final effectiveOrigin = widget.inverse ? widget.targetLang : widget.sourceLang;
+  final effectiveTarget = widget.inverse ? widget.sourceLang : widget.targetLang;
+  final effectiveOrigin = widget.inverse ? widget.targetLang : widget.sourceLang;
 
-    try {
-      setState(() => translating = true);
-      final result = await WordCache.get(trim, effectiveOrigin, effectiveTarget);
-      if (!mounted) return;
+  setState(() => _loadingWordIndex = wordIndex);
+  try {
+    final result = await WordCache.get(trim, effectiveOrigin, effectiveTarget);
+    if (!mounted) return;
 
-      final scheme = Theme.of(context).colorScheme;
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text('“$trim” → $effectiveTarget', style: TextStyle(color: scheme.onSurface)),
-          content: Text(
-            (result == null || result.isEmpty) ? '—' : result,
-            style: TextStyle(color: scheme.onSurface),
+    final scheme = Theme.of(context).colorScheme;
+
+    await showDialog(
+      context: context,
+      builder: (_) {
+        String? localResult = result;
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: Text('“$trim” → $effectiveTarget', style: TextStyle(color: scheme.onPrimary)),
+            content: Text(localResult!.isEmpty ? '—' : localResult, style: TextStyle(color: scheme.onPrimary)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('OK', style: TextStyle(color: scheme.secondary)),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK', style: TextStyle(color: scheme.primary)),
-            ),
-          ],
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error traduciendo palabra')),
-      );
-    } finally {
-      if (mounted) setState(() => translating = false);
-    }
+        );
+      },
+    );
+  } finally {
+    if (mounted) setState(() => _loadingWordIndex = null);
   }
+}
 
   @override
   Widget build(BuildContext context) {
     final (tokens, wordTokenIndexes) = _tokenize(widget.text);
-
-    final base = DefaultTextStyle.of(context).style;
-    final scheme = Theme.of(context).colorScheme;
-
-    final wordStyle = widget.wordStyle ??
-        base.copyWith(
+    final scheme = Theme.of(context).colorScheme; 
+    final defaultStyle = DefaultTextStyle.of(context).style;
+    final wordStyle =
+        widget.wordStyle ??
+        defaultStyle.copyWith(
           fontSize: 16,
           height: 1.15,
-          color: scheme.onSurface,
+          color: Colors.black87,
           fontWeight: FontWeight.w600,
         );
-
-    final ipaStyle = widget.ipaStyle ??
-        base.copyWith(
+    final ipaStyle =
+        widget.ipaStyle ??
+        defaultStyle.copyWith(
           fontSize: 13,
           height: 1.15,
-          color: scheme.onSurfaceVariant,
+          color: const Color(0xFF424242),
         );
 
     final ipa = widget.ipaPerWord ?? const <String>[];
     final rom = widget.romanizationPerWord ?? const <String>[];
 
     int wordCounter = 0;
-    final wordIndexSet = wordTokenIndexes.toSet();
+final wordIndexSet = wordTokenIndexes.toSet();
+final wordBlocks = <Widget>[];
 
-    final wordBlocks = <Widget>[];
-    for (int i = 0; i < tokens.length; i++) {
-      final tk = tokens[i];
-      final isWordToken = wordIndexSet.contains(i);
+for (int i = 0; i < tokens.length; i++) {
+  final tk = tokens[i];
+  final isWordToken = wordIndexSet.contains(i);
 
-      if (isWordToken) {
-        final ipaForThisWord = (wordCounter < ipa.length) ? ipa[wordCounter] : '';
-        final romForThisWord = (wordCounter < rom.length) ? rom[wordCounter] : '';
-        wordCounter++;
+  if (isWordToken) {
+    final myWordIndex = wordCounter;
+    final ipaForThisWord = (widget.showPerWordIpa && wordCounter < ipa.length) ? ipa[wordCounter] : '';
+    final romForThisWord = (widget.showPerWordRomanization && wordCounter < rom.length) ? rom[wordCounter] : '';
+    wordCounter++;
 
-        final column = Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(tk, style: wordStyle, textAlign: TextAlign.center),
-            if (romForThisWord.isNotEmpty) ...[
-              SizedBox(height: widget.gap),
-              Text(
-                romForThisWord,
-                style: ipaStyle,
-                textAlign: TextAlign.center,
-                softWrap: false,
-                maxLines: 1,
-                overflow: TextOverflow.visible,
-              ),
-            ],
-            if (ipaForThisWord.isNotEmpty) ...[
-              SizedBox(height: widget.gap),
-              Text(
-                ipaForThisWord,
-                style: ipaStyle,
-                textAlign: TextAlign.center,
-                softWrap: false,
-                maxLines: 1,
-                overflow: TextOverflow.visible,
-              ),
-            ],
-          ],
-        );
+    final baseColumn = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(tk, style: wordStyle, textAlign: TextAlign.center),
+        if (romForThisWord.isNotEmpty) ...[
+          SizedBox(height: widget.gap),
+          Text(romForThisWord, style: ipaStyle, textAlign: TextAlign.center, softWrap: false, maxLines: 1),
+        ],
+        if (ipaForThisWord.isNotEmpty) ...[
+          SizedBox(height: widget.gap),
+          Text(ipaForThisWord, style: ipaStyle, textAlign: TextAlign.center, softWrap: false, maxLines: 1),
+        ],
+      ],
+    );
 
-        wordBlocks.add(
-          IntrinsicWidth(
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => _onTapWord(tk),
-                  behavior: HitTestBehavior.opaque,
-                  child: Tooltip(message: tk, child: column),
-                ),
+    wordBlocks.add(
+      IntrinsicWidth(
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => _onTapWord(tk, myWordIndex),
+              behavior: HitTestBehavior.opaque,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.topCenter,
+                children: [
+                  baseColumn,
+                  if (_loadingWordIndex == myWordIndex)
+                    Positioned(
+                      top: -6,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: scheme.secondary),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
-        );
-      } else {
-        // espacio visual para grupos de espacios
-        if (tk.trim().isEmpty) {
-          wordBlocks.add(const SizedBox(width: 6));
-        } else {
-          wordBlocks.add(Text(tk, style: base));
-        }
-      }
+        ),
+      ),
+    );
+  } else {
+    if (tk.trim().isEmpty) {
+      wordBlocks.add(const SizedBox(width: 6));
+    } else {
+      wordBlocks.add(Text(tk, style: defaultStyle));
     }
+  }
+}
 
-    return Wrap(
+    final wrap = Wrap(
       alignment: WrapAlignment.start,
       runAlignment: WrapAlignment.start,
       crossAxisAlignment: WrapCrossAlignment.start,
@@ -221,5 +227,7 @@ class _TapWordTextState extends State<TapWordText> {
       runSpacing: widget.vSpacing,
       children: wordBlocks,
     );
+
+    return wrap;
   }
 }

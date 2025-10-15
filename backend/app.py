@@ -1,19 +1,17 @@
 from collections.abc import Iterable
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
-from beginnergen import generate_sentence_beginner
+from beginnergen import generate_sentence_beginner, conseguirPalabraRandom
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from typing import Any, cast
 from diskcache import Cache
-
 import hashlib, requests, os, sys, io, base64, re, numpy as np
 from PIL import Image, ImageOps
 from paddleocr import PaddleOCR
-from ipa import pron_tokens, pronounce, space_chinese_for_flutter, space_japanese_for_flutter
-
+from ipa import pronounce, space_chinese_for_flutter, space_japanese_for_flutter
 
 EN = "en"
 
@@ -101,11 +99,12 @@ def index():
     data = request.get_json(force=True) or {}
     originalLanguage = (data.get("originalLanguage") or EN).strip().lower()
     target = (data.get("target") or "es").strip().lower()
+    tipo = (data.get("tipo") or "").strip().lower()
 
-    try:
+    if tipo == "frase":
         sentence = generate_sentence_beginner()
-    except Exception as e:
-        return retornar(build_payload(error=e, target=target), 500)
+    else:
+        sentence = conseguirPalabraRandom(tipo)
 
     key = cache_key(sentence, originalLanguage, target)
     cached = cache.get(key)

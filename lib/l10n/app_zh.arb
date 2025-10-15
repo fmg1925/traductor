@@ -71,5 +71,13 @@
   "light": "浅色",
   "dark": "深色",
   "system": "系统",
-  "generate_for_practice": "生成一个用于开始练习的短语"
+  "generate_for_practice": "生成一个用于开始练习的短语",
+  "frase": "短语",
+  "sujeto": "主语",
+  "verbo": "动词",
+  "color": "颜色",
+  "familia": "家庭",
+  "adjetivo": "形容词",
+  "direccion": "路线",
+  "retraducir": "重新翻译"
 }

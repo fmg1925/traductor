@@ -1,13 +1,18 @@
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show ValueNotifier, kIsWeb;
+import 'package:universal_io/io.dart' show Platform;
 
 class Tts {
   final FlutterTts _tts = FlutterTts();
-  bool isSpeaking = false;
 
-  void Function(bool)? onStateChanged;
+  final ValueNotifier<bool> speaking = ValueNotifier(false);
 
-  Future<void> init({String lang = 'es-ES', void Function(bool)? onStateChanged}) async {
+  final bool isWindowsDesktop = Platform.isWindows && !kIsWeb;
+
+  Future<void> init({
+    String lang = 'es-ES',
+    void Function(bool)? onStateChanged,
+  }) async {
     await _tts.setLanguage(lang);
     await _tts.setPitch(1.0);
     await _tts.setVolume(1.0);
@@ -20,31 +25,78 @@ class Tts {
     }
 
     _tts.setStartHandler(() {
-      isSpeaking = true;
-      onStateChanged?.call(true);
+      speaking.value = true;
     });
     _tts.setCompletionHandler(() {
-      isSpeaking = false;
-      onStateChanged?.call(false);
+      speaking.value = false;
     });
     _tts.setCancelHandler(() {
-      isSpeaking = false;
-      onStateChanged?.call(false);
+      speaking.value = false;
     });
     _tts.setErrorHandler((msg) {
-      isSpeaking = false;
-      onStateChanged?.call(false);
+      speaking.value = false;
     });
   }
 
   Future<void> speak(String text) async {
-    await _tts.stop();
-    await _tts.speak(text);
+    if(speaking.value) {
+      await _tts.stop();
+    }
+    speaking.value = true;
+    try {
+      await _tts.speak(text);
+    } catch(e) {
+      speaking.value = false;
+    } finally {
+      speaking.value = false;
+    }
   }
-  
-  Future<void> stop() => _tts.stop();
-  Future<void> dispose() => _tts.stop();
-  Future<void> changeLanguage(String language) => _tts.setLanguage(language);
-  bool getState() => isSpeaking; // Conseguir si está hablando o no
-  Future isLanguageAvailable(String language) => _tts.isLanguageAvailable(language);
+
+  Future<void> stop() async {
+    await _tts.stop();
+    speaking.value = false;
+  }
+
+  Future<void> dispose() async {
+    _tts.stop();
+    speaking.value = false;
+  }
+
+  Future<void> changeLanguage(String language) async {
+    if (isWindowsDesktop) {
+      List voices = await _tts.getVoices;
+      late String selectedVoice;
+      for (var voice in voices) {
+        if (voice['locale'] == language) {
+          selectedVoice = voice['name'];
+          break;
+        }
+      }
+      await _tts.setVoice({
+        'name': selectedVoice,
+        'locale': language,
+      });
+    }
+    return await _tts.setLanguage(language);
+  }
+
+  Future<bool> isLanguageAvailable(String language) async {
+    if (isWindowsDesktop) {
+      final raw = await _tts.getVoices;
+
+      if (raw.isEmpty) {
+        return Future.value(false);
+      }
+
+      for (var voice in raw) {
+        if (voice['locale'] == language) {
+          return Future.value(true);
+        }
+      }
+
+      return Future.value(false);
+    }
+
+    return _tts.isLanguageAvailable(language).then((v) => v == true);
+  }
 }

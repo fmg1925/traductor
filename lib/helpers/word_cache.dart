@@ -38,8 +38,4 @@ class WordCache {
     _inProgress[key] = resultado;
     return resultado;
   }
-
-  static Future<void> clear() async {
-    await _box.clear();
-  }
 }

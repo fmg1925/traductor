@@ -18,6 +18,7 @@ import 'package:traductor/l10n/app_localizations.dart';
 import 'package:universal_io/io.dart' show Platform;
 
 final tts = Tts();
+String tipoGeneracion = "frase";
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -174,7 +175,7 @@ class _HomePageState extends State<HomePage> {
           targetLang,
         );
       } else {
-        translationFuture = fetchTranslation(provider, sourceLang, targetLang);
+        translationFuture = fetchTranslation(provider, sourceLang, targetLang, tipoGeneracion);
       }
     });
   }
@@ -516,12 +517,16 @@ class _HomePageState extends State<HomePage> {
   Padding generarButton() {
     final t = AppLocalizations.of(context);
     final isEmpty = _controller.text.trim().isEmpty;
+    final theme = Theme.of(context);
     final scheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  padding: const EdgeInsets.symmetric(horizontal: 20),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           FilledButton.icon(
             onPressed: _generar,
@@ -533,19 +538,42 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          FilledButton.icon(
-            onPressed: _ocr,
-            icon: const Icon(Icons.document_scanner),
-            label: const Text('OCR'),
-            style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(
-                scheme.secondaryContainer,
-              ),
-            ),
+          const SizedBox(width: 8),
+          DropdownButton<String>(
+            value: tipoGeneracion,
+            onChanged: (v) => setState(() => tipoGeneracion = v!),
+            dropdownColor: scheme.primary,
+                    iconEnabledColor: scheme.onSurfaceVariant,
+                    iconDisabledColor: theme.disabledColor,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurface,
+                    ),
+            items: [
+              DropdownMenuItem(value: 'frase', child: Text(t.frase)),
+              DropdownMenuItem(value: 'sujeto', child: Text(t.sujeto)),
+              DropdownMenuItem(value: 'verbo', child: Text(t.verbo)),
+              DropdownMenuItem(value: 'color', child: Text(t.color)),
+              DropdownMenuItem(value: 'familia', child: Text(t.familia)),
+              DropdownMenuItem(value: 'adjetivo', child: Text(t.adjetivo)),
+              DropdownMenuItem(value: 'direccion', child: Text(t.direccion))
+            ],
           ),
         ],
       ),
-    );
+      FilledButton.icon(
+        onPressed: _ocr,
+        icon: const Icon(Icons.document_scanner),
+        label: const Text('OCR'),
+        style: ButtonStyle(
+          backgroundColor: WidgetStatePropertyAll(
+            scheme.secondaryContainer,
+          ),
+        ),
+      ),
+    ],
+  ),
+);
+
   }
 
   NavigationBar bottomNavBar() {
@@ -659,76 +687,96 @@ class TranslationsArea extends StatelessWidget {
                 targetLang: targetLang,
                 sourceLang: item.detectedLanguage,
                 ipaPerWord: item.originalIpa,
+                romanizationPerWord: item.originalRomanization,
                 wordStyle: wordStyle(context),
                 ipaStyle: ipaStyle(context),
               ),
               color: scheme.primary,
-              onTts: () async {
-                if (tts.getState() == true) {
-                  await tts.stop();
-                  return;
-                }
-                final langs = languages(context);
-                final langName = langs[item.detectedLanguage];
+              buttons: rightButtons(
+                t,
+                () async {
+                  if (tts.speaking.value) {
+                    await tts.stop();
+                    return;
+                  }
+                  final langs = languages(context);
+                  final langName = langs[item.detectedLanguage];
 
-                final available = await tts.isLanguageAvailable(
-                  ttsLocaleFor(item.detectedLanguage),
-                );
-                if (!context.mounted) return;
-
-                if (available != true) {
-                  PopUp.showPopUp(
-                    context,
-                    t.missing_language(langName!),
-                    t.language_not_installed(langName),
+                  final available = await tts.isLanguageAvailable(
+                    ttsLocaleFor(item.detectedLanguage),
                   );
-                  return;
-                }
 
-                await tts.changeLanguage(ttsLocaleFor(item.detectedLanguage));
-                await tts.speak(item.originalText);
-              },
+                  if (!context.mounted) return;
+
+                  if (available != true) {
+                    PopUp.showPopUp(
+                      context,
+                      t.missing_language(langName!),
+                      t.language_not_installed(langName),
+                    );
+                    return;
+                  }
+
+                  await tts.changeLanguage(ttsLocaleFor(item.detectedLanguage));
+                  await tts.speak(item.originalText);
+                },
+                item.originalText,
+                context,
+              ),
               copyText: item.originalText,
             ),
             const SizedBox(height: 12),
-            TileRich(
-              title: t.translation,
-              body: TapWordText(
-                text: item.translatedText,
-                targetLang: item.detectedLanguage,
-                sourceLang: item.target,
-                ipaPerWord: item.translatedIpa,
-                wordStyle: wordStyle(context),
-                ipaStyle: ipaStyle(context),
-              ),
-              color: scheme.primary,
-              onTts: () async {
-                if (tts.getState() == true) {
-                  await tts.stop();
-                  return;
-                }
-                final langs = languages(context);
-                final langName = langs[item.target];
+            ValueListenableBuilder(
+              valueListenable: tts.speaking,
+              builder: (context, isListening, _) {
+                return TileRich(
+                  title: t.translation,
+                  body: TapWordText(
+                    text: item.translatedText,
+                    targetLang: item.detectedLanguage,
+                    sourceLang: item.target,
+                    ipaPerWord: item.translatedIpa,
+                    romanizationPerWord: item.translatedRomanization,
+                    wordStyle: wordStyle(context),
+                    ipaStyle: ipaStyle(context),
+                  ),
+                  color: scheme.primary,
+                  buttons: rightButtons(
+                    t,
+                    () async {
+                      if (tts.speaking.value) {
+                        await tts.stop();
+                        return;
+                      }
+                      final langs = languages(context);
+                      final langName = langs[item.target];
 
-                final available = await tts.isLanguageAvailable(
-                  ttsLocaleFor(item.target),
-                );
+                      final available = await tts.isLanguageAvailable(
+                        ttsLocaleFor(item.target),
+                      );
 
-                if (!context.mounted) return;
+                      if (!context.mounted) return;
 
-                if (available != true) {
-                  PopUp.showPopUp(
+                      if (available != true) {
+                        PopUp.showPopUp(
+                          context,
+                          t.missing_language(langName!),
+                          t.language_not_installed(langName),
+                        );
+                        return;
+                      }
+
+                      await tts.changeLanguage(
+                        ttsLocaleFor(item.target),
+                      );
+                      await tts.speak(item.translatedText);
+                    },
+                    item.originalText,
                     context,
-                    t.missing_language(langName!),
-                    t.language_not_installed(langName),
-                  );
-                  return;
-                }
-
-                await tts.changeLanguage(ttsLocaleFor(item.target));
-                await tts.speak(item.translatedText);
-              },
-              copyText: item.translatedText,
+                  ),
+                  copyText: item.translatedText,
+                );
+              }
             ),
           ],
         );

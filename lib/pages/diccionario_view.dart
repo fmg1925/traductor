@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../l10n/app_localizations.dart';
+import 'package:flutter/services.dart';
+import 'package:traductor/pages/home.dart' show tts;
 
 class DiccionarioView extends StatefulWidget {
   const DiccionarioView({super.key});
@@ -162,32 +164,133 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                         ),
                       ),
                     ),
-                    trailing: IconButton(
-                      tooltip: t.delete,
-                      icon: const Icon(Icons.more_vert),
-                      onPressed: () async {
-                        final picked = await showModalBottomSheet<bool>(
-                          context: context,
-                          showDragHandle: true,
-                          backgroundColor: theme.colorScheme.surface,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                          ),
-                          builder: (ctx) => SafeArea(
-                            child: ListTile(
-                              leading: const Icon(Icons.delete_outline),
-                              title: Text(t.delete),
-                              onTap: () => Navigator.pop(ctx, true),
-                            ),
-                          ),
-                        );
-                        if (picked == true) {
-                          await b.delete(e.key);
-                          if (!mounted) return;
+                    trailing: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: ValueListenableBuilder(
+                        valueListenable: tts.speaking,
+                        builder: (context, isSpeaking, _) {
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton.filledTonal(
+                                tooltip: isSpeaking ? t.stop : t.listen,
+                                icon: Icon(
+                                  isSpeaking ? Icons.stop : Icons.volume_up,
+                                ),
+                                onPressed: () async {
+                                  if (isSpeaking) { return await tts.stop(); }
+                                  await tts.changeLanguage(
+                                    parts[1],
+                                  );
+                                  await tts.speak(
+                                    word,
+                                  );
+                                },
+                                iconSize: 20,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 44,
+                                  height: 44,
+                                ),
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              const SizedBox(width: 6),
+                              IconButton.filledTonal(
+                                tooltip: t.copy,
+                                icon: const Icon(Icons.copy_all),
+                                onPressed: () {
+                                  Clipboard.setData(ClipboardData(text: word));
+                                  ScaffoldMessenger.of(context)
+                                    ..hideCurrentSnackBar()
+                                    ..showSnackBar(
+                                      SnackBar(content: Text(t.copied)),
+                                    );
+                                },
+                                iconSize: 20,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 44,
+                                  height: 44,
+                                ),
+                                visualDensity: VisualDensity.compact,
+                              ),
+                          
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              IconButton.filledTonal(
+                                tooltip: isSpeaking ? t.stop : t.listen,
+                                icon: Icon(
+                                  isSpeaking ? Icons.stop : Icons.volume_up,
+                                ),
+                                onPressed: () async {
+                                  if (isSpeaking) { return await tts.stop(); }
+                                  await tts.changeLanguage(
+                                    parts[2],
+                                  );
+                                  await tts.speak(
+                                    e.value,
+                                  );
+                                },
+                                iconSize: 20,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 44,
+                                  height: 44,
+                                ),
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              const SizedBox(width: 6),
+                              IconButton.filledTonal(
+                                tooltip: t.copy,
+                                icon: const Icon(Icons.copy_all),
+                                onPressed: () {
+                                  Clipboard.setData(ClipboardData(text: e.value));
+                                  ScaffoldMessenger.of(context)
+                                    ..hideCurrentSnackBar()
+                                    ..showSnackBar(
+                                      SnackBar(content: Text(t.copied)),
+                                    );
+                                },
+                                iconSize: 20,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 44,
+                                  height: 44,
+                                ),
+                                visualDensity: VisualDensity.compact,
+                              ),
+                          
+                              const SizedBox(width: 4),
+                          
+                              // (Opcional) tu menú "más" para borrar
+                              IconButton(
+                                tooltip: t.delete,
+                                icon: const Icon(Icons.more_vert),
+                                onPressed: () async {
+                                  final picked = await showModalBottomSheet<bool>(
+                                    context: context,
+                                    showDragHandle: true,
+                                    backgroundColor: theme.colorScheme.surface,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(16),
+                                      ),
+                                    ),
+                                    builder: (ctx) => SafeArea(
+                                      child: ListTile(
+                                        leading: const Icon(Icons.delete_outline),
+                                        title: Text(t.delete),
+                                        onTap: () => Navigator.pop(ctx, true),
+                                      ),
+                                    ),
+                                  );
+                                  if (picked == true) {
+                                    await b.delete(e.key);
+                                    if (!mounted) return;
+                                  }
+                                },
+                              ),
+                            ],
+                          );
                         }
-                      },
+                      ),
                     ),
                   ),
                 ),

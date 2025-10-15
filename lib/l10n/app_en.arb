@@ -71,5 +71,13 @@
   "light": "Light",
   "dark": "Dark",
   "system": "System",
-  "generate_for_practice": "Generate a phrase to start practicing"
+  "generate_for_practice": "Generate a phrase to start practicing",
+  "frase": "Phrase",
+  "sujeto": "Subject",
+  "verbo": "Verb",
+  "color": "Color",
+  "familia": "Family",
+  "adjetivo": "Adjective",
+  "direccion": "Directions",
+  "retraducir": "Retranslate"
 }

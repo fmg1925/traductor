@@ -32,6 +32,7 @@ Future<Translation> fetchTranslation(
   DataProvider provider,
   String originalLanguage,
   String target,
+  String tipo,
 ) async {
   final key = 'fetchTranslation|$originalLanguage|$target';
 
@@ -39,7 +40,7 @@ Future<Translation> fetchTranslation(
     final res = await provider.post(
       provider.uri,
       headers: const {'Accept': 'application/json', 'Content-Type': 'application/json'},
-      body: jsonEncode({'originalLanguage': originalLanguage, 'target': target}),
+      body: jsonEncode({'originalLanguage': originalLanguage, 'target': target, 'tipo': tipo}),
     );
     final bodyText = utf8.decode(res.bodyBytes);
 

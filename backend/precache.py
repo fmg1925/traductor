@@ -57,7 +57,7 @@ def load_words_from_file(path: str, limit: int | None) -> List[str]:
     return out
 
 def make_random_words(n: int, source: str) -> List[str]:
-    base = DEFAULT_WORDS  # puedes cambiar por listas por idioma si quieres
+    base = DEFAULT_WORDS
     if n <= len(base):
         return random.sample(base, n)
     words: List[str] = []
@@ -76,17 +76,14 @@ def _dig(d: Dict[str, Any], *path: str) -> Any:
     return cur
 
 def parse_translated_text(data: Dict[str, Any]) -> str:
-    # Respuestas típicas
     for k in ("translatedText", "translation", "text"):
         v = data.get(k)
         if isinstance(v, str):
             return v
-    # Anidadas
     for path in (("data", "translatedText"), ("data", "text"), ("result", "translatedText")):
         v = _dig(data, *path)
         if isinstance(v, str):
             return v
-    # Listas
     lst = data.get("translations") or data.get("data")
     if isinstance(lst, list) and lst:
         first = lst[0]
@@ -100,9 +97,6 @@ def parse_translated_text(data: Dict[str, Any]) -> str:
 
 def job_translate(session: requests.Session, backend: str, word: str,
                   source: str, target: str, timeout_s: float) -> Tuple[str, str, bool, str, str]:
-    """
-    Devuelve: (word, target, success, msg, translated)
-    """
     url = f"{backend.rstrip('/')}/translate"
     payload = {"q": word, "source": source, "target": target}
     try:
@@ -135,7 +129,6 @@ def main():
     ap.add_argument("--workers", type=int, default=16, help="Hilos concurrentes")
     ap.add_argument("--timeout", type=float, default=20.0, help="Timeout de respuesta del backend (segundos)")
     ap.add_argument("--shuffle", action="store_true", help="Barajar las palabras antes de enviar")
-    # salida
     ap.add_argument("--outdir", default="out_translations", help="Carpeta destino para .txt/.tsv")
     ap.add_argument("--pairs", action="store_true", help="Guardar también pares source→target en TSV")
     args = ap.parse_args()
@@ -188,7 +181,6 @@ def main():
                 prev = f"{translated[:60]}…" if translated and len(translated) > 60 else translated
                 print(f"[{i}/{len(futures)}] {word!r} → {target}: {status}" + (f"  '{prev}'" if success else ""))
 
-    # Escribir archivos
     for t in targets:
         seen = set()
         uniq: List[str] = []

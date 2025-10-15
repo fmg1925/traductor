@@ -154,4 +154,28 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get generate_for_practice => '練習を始めるためのフレーズを生成';
+
+  @override
+  String get frase => 'フレーズ';
+
+  @override
+  String get sujeto => '主語';
+
+  @override
+  String get verbo => '動詞';
+
+  @override
+  String get color => '色';
+
+  @override
+  String get familia => '家族';
+
+  @override
+  String get adjetivo => '形容詞';
+
+  @override
+  String get direccion => '経路';
+
+  @override
+  String get retraducir => '再翻訳';
 }

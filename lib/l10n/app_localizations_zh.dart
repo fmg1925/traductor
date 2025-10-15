@@ -154,4 +154,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get generate_for_practice => '生成一个用于开始练习的短语';
+
+  @override
+  String get frase => '短语';
+
+  @override
+  String get sujeto => '主语';
+
+  @override
+  String get verbo => '动词';
+
+  @override
+  String get color => '颜色';
+
+  @override
+  String get familia => '家庭';
+
+  @override
+  String get adjetivo => '形容词';
+
+  @override
+  String get direccion => '路线';
+
+  @override
+  String get retraducir => '重新翻译';
 }

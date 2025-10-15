@@ -71,5 +71,13 @@
   "light": "라이트",
   "dark": "다크",
   "system": "시스템",
-  "generate_for_practice": "연습을 시작할 문구를 생성"
+  "generate_for_practice": "연습을 시작할 문구를 생성",
+  "frase": "구",
+  "sujeto": "주어",
+  "verbo": "동사",
+  "color": "색",
+  "familia": "가족",
+  "adjetivo": "형용사",
+  "direccion": "길찾기",
+  "retraducir": "다시 번역"
 }

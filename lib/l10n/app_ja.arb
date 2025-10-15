@@ -71,5 +71,13 @@
   "light": "ライト",
   "dark": "ダーク",
   "system": "システム",
-  "generate_for_practice": "練習を始めるためのフレーズを生成"
+  "generate_for_practice": "練習を始めるためのフレーズを生成",
+  "frase": "フレーズ",
+  "sujeto": "主語",
+  "verbo": "動詞",
+  "color": "色",
+  "familia": "家族",
+  "adjetivo": "形容詞",
+  "direccion": "経路",
+  "retraducir": "再翻訳"
 }

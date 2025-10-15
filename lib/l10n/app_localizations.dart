@@ -373,6 +373,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Generate a phrase to start practicing'**
   String get generate_for_practice;
+
+  /// No description provided for @frase.
+  ///
+  /// In en, this message translates to:
+  /// **'Phrase'**
+  String get frase;
+
+  /// No description provided for @sujeto.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get sujeto;
+
+  /// No description provided for @verbo.
+  ///
+  /// In en, this message translates to:
+  /// **'Verb'**
+  String get verbo;
+
+  /// No description provided for @color.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get color;
+
+  /// No description provided for @familia.
+  ///
+  /// In en, this message translates to:
+  /// **'Family'**
+  String get familia;
+
+  /// No description provided for @adjetivo.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjective'**
+  String get adjetivo;
+
+  /// No description provided for @direccion.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get direccion;
+
+  /// No description provided for @retraducir.
+  ///
+  /// In en, this message translates to:
+  /// **'Retranslate'**
+  String get retraducir;
 }
 
 class _AppLocalizationsDelegate

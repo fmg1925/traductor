@@ -23,17 +23,14 @@ class RequestLimiter {
   final _cache = <String, _CacheEntry<dynamic>>{};
 
   Future<T> run<T>(String key, Future<T> Function() op, {bool cache = false}) async {
-    // Serve from cache if fresh.
     if (cache) {
       final c = _cache[key];
       if (c != null && c.isFresh) return c.value as T;
     }
 
-    // De-dup: same key shares one Future.
     final existing = _inflight[key];
     if (existing != null) return existing as Future<T>;
 
-    // Debounce by key.
     final last = _lastHitPerKey[key] ?? DateTime.fromMillisecondsSinceEpoch(0);
     final wait = last.add(minGap).difference(DateTime.now());
     if (wait.inMilliseconds > 0) {

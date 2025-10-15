@@ -154,4 +154,28 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get generate_for_practice => '연습을 시작할 문구를 생성';
+
+  @override
+  String get frase => '구';
+
+  @override
+  String get sujeto => '주어';
+
+  @override
+  String get verbo => '동사';
+
+  @override
+  String get color => '색';
+
+  @override
+  String get familia => '가족';
+
+  @override
+  String get adjetivo => '형용사';
+
+  @override
+  String get direccion => '길찾기';
+
+  @override
+  String get retraducir => '다시 번역';
 }

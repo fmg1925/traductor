@@ -2,7 +2,7 @@ $backend = "http://localhost:3000"
 $outdir  = "C:\Users\WhatsApp\Desktop\traductor\backend\"
 
 $files = @{
-  "en" = "C:\Users\WhatsApp\Desktop\traductor\backend\palabras.txt"
+  "en" = "C:\Users\WhatsApp\Desktop\traductor\backend\palabras2.txt"
   "es" = "$outdir\en_to_es.txt"
   "ja" = "$outdir\en_to_ja.txt"
   "ko" = "$outdir\en_to_ko.txt"
@@ -20,5 +20,5 @@ foreach ($src in $languages) {
     --targets $tgts `
     --file $file `
     --outdir $outdir `
-    --workers 16 --timeout 20 --shuffle
+    --workers 4 --timeout 20
 }

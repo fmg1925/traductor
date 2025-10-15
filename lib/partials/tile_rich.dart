@@ -160,26 +160,32 @@ class TileRich extends StatelessWidget {
   }
 }
 
-Positioned rightButtons(
-    AppLocalizations t,
-    VoidCallback onTts,
-    String copyText,
-    BuildContext context,
-  ) {
-    return Positioned(
-      top: -5,
-      right: 0,
+Widget rightButtons(
+  AppLocalizations t,
+  VoidCallback onTts,
+  String copyText,
+  BuildContext context,
+) {
+  return Align(
+    alignment: Alignment.topRight,
+    child: Transform.translate(
+      offset: const Offset(0, -5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          IconButton.filledTonal(
-            icon: Icon(tts.getState() ? Icons.stop : Icons.volume_up),
-            tooltip: tts.getState() ? t.stop : t.listen,
-            onPressed: onTts,
-            iconSize: 20,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: 50, height: 50),
-            visualDensity: VisualDensity.compact,
+          ValueListenableBuilder(
+            valueListenable: tts.speaking,
+            builder: (context, isListening, _) {
+              return IconButton.filledTonal(
+                icon: Icon(isListening ? Icons.stop : Icons.volume_up),
+                tooltip: isListening ? t.stop : t.listen,
+                onPressed: onTts,
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints.tightFor(width: 50, height: 50),
+                visualDensity: VisualDensity.compact,
+              );
+            },
           ),
           const SizedBox(height: 4),
           IconButton.filledTonal(
@@ -198,15 +204,6 @@ Positioned rightButtons(
           ),
         ],
       ),
-    );
-  }
-
-  Widget maxWidth({required Widget child}) => Center(
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 900),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: child,
-      ),
     ),
   );
+}
