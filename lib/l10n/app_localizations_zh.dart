@@ -178,4 +178,129 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get retraducir => '重新翻译';
+
+  @override
+  String speechNotInstalled(Object lang) {
+    return '未安装 $lang 语音识别功能。';
+  }
+
+  @override
+  String get theme => '主题';
+
+  @override
+  String get ipaPName => '清双唇塞音';
+
+  @override
+  String get ipaBName => '浊双唇塞音';
+
+  @override
+  String get ipaTName => '清齿龈塞音';
+
+  @override
+  String get ipaDName => '浊齿龈塞音';
+
+  @override
+  String get ipaKName => '清软腭塞音';
+
+  @override
+  String get ipaGName => '浊软腭塞音';
+
+  @override
+  String get ipaTeshName => '清后齿龈塞擦音';
+
+  @override
+  String get ipaDezhName => '浊后齿龈塞擦音';
+
+  @override
+  String get ipaFName => '清唇齿擦音';
+
+  @override
+  String get ipaVName => '浊唇齿擦音';
+
+  @override
+  String get ipaThetaName => '清齿擦音';
+
+  @override
+  String get ipaEthName => '浊齿擦音';
+
+  @override
+  String get ipaSName => '清齿龈擦音';
+
+  @override
+  String get ipaZName => '浊齿龈擦音';
+
+  @override
+  String get ipaEshName => '清后齿龈擦音';
+
+  @override
+  String get ipaEzhName => '浊后齿龈擦音';
+
+  @override
+  String get ipaHName => '清声门擦音';
+
+  @override
+  String get ipaMName => '双唇鼻音';
+
+  @override
+  String get ipaNName => '齿龈鼻音';
+
+  @override
+  String get ipaEngName => '软腭鼻音';
+
+  @override
+  String get ipaLName => '齿龈边近音';
+
+  @override
+  String get ipaTurnRName => '齿龈近音';
+
+  @override
+  String get ipaJName => '硬腭近音';
+
+  @override
+  String get ipaWName => '双唇软腭近音';
+
+  @override
+  String get ipaIName => '前高不圆唇元音';
+
+  @override
+  String get ipaSmallCapitalIName => '近前近高不圆唇元音';
+
+  @override
+  String get ipaEName => '前次闭不圆唇元音';
+
+  @override
+  String get ipaEpsilonName => '前次开不圆唇元音';
+
+  @override
+  String get ipaAshName => '近前近低不圆唇元音';
+
+  @override
+  String get ipaScriptAName => '后低不圆唇元音';
+
+  @override
+  String get ipaOpenOName => '后次开圆唇元音';
+
+  @override
+  String get ipaOuDiphthongName => '双元音';
+
+  @override
+  String get ipaUName => '后高圆唇元音';
+
+  @override
+  String get ipaUpsilonName => '近后近高圆唇元音';
+
+  @override
+  String get ipaTurnedVName => '后次开不圆唇元音';
+
+  @override
+  String get ipaSchwaName => '中元音（央中元音，舒化）';
+
+  @override
+  String get ipaAiDiphthongName => '双元音';
+
+  @override
+  String get ipaAuDiphthongName => '双元音';
+
+  @override
+  String get ipaOpenOiDiphthongName => '双元音';
 }

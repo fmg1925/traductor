@@ -169,7 +169,7 @@ Widget rightButtons(
   return Align(
     alignment: Alignment.topRight,
     child: Transform.translate(
-      offset: const Offset(0, -5),
+      offset: const Offset(0, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [

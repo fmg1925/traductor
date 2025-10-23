@@ -214,7 +214,7 @@ for (int i = 0; i < tokens.length; i++) {
     if (tk.trim().isEmpty) {
       wordBlocks.add(const SizedBox(width: 6));
     } else {
-      wordBlocks.add(Text(tk, style: defaultStyle));
+      wordBlocks.add(Text(tk, style: wordStyle));
     }
   }
 }

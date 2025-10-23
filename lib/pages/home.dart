@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:traductor/helpers/tts.dart';
 import 'package:traductor/main.dart';
 import 'package:traductor/pages/diccionario_view.dart';
+import 'package:traductor/pages/ipa_grid.dart';
 import 'package:traductor/pages/practice_view.dart';
 import 'package:traductor/partials/tile_rich.dart';
 import '../entities/translation.dart';
@@ -54,7 +55,7 @@ class _HomePageState extends State<HomePage> {
         if (mounted) setState(() {});
       },
     );
-    if (!isWindowsDesktop) _initSpeech(); // Iniciar en todos menos windows
+    _initSpeech();
   }
 
   Future<void> _initSpeech() async {
@@ -62,7 +63,6 @@ class _HomePageState extends State<HomePage> {
       _speechEnabled.value = await _speechToText.initialize(
         onStatus: (status) {
           if (!mounted) return;
-          setState(() {});
         },
         onError: (e) {
           if (!mounted) return;
@@ -101,21 +101,30 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<bool> _isSpeechToTextLanguageInstalled(String language) async {
+    final locales = await _speechToText.locales();
+    language = language.substring(0, 2);
+    for (var locale in locales) {
+      if (locale.localeId.substring(0, 2) == language) return true;
+    }
+    return false;
+  }
+
   Future<void> _startListening() async {
     if (!mounted || !_speechEnabled.value) return;
-    if (_speechToText.isListening) return;
+    if (_speechToText.isListening || _speechListening) return;
     try {
       _speechListening = true;
       await _speechToText.listen(
         onResult: _onSpeechResult,
-        localeId: ttsLocaleFor(sourceLang),
         listenOptions: SpeechListenOptions(
+          localeId: ttsLocaleFor(sourceLang),
           listenMode: ListenMode.confirmation,
+          listenFor: const Duration(seconds: 30),
+          pauseFor: const Duration(seconds: 10),
           partialResults: true,
           cancelOnError: true,
         ),
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 10),
       );
       if (mounted) setState(() {});
     } catch (e) {
@@ -131,15 +140,13 @@ class _HomePageState extends State<HomePage> {
     if (!mounted || !_speechEnabled.value) return;
     try {
       await _speechToText.stop();
-      await _speechToText.cancel();
     } catch (e) {
       if (!mounted) return;
-      debugPrint(e.toString());
+      await _speechToText.cancel();
     } finally {
       if (mounted) {
         setState(() {
           _speechListening = false;
-          _speechToText.cancel();
         });
       }
     }
@@ -147,8 +154,12 @@ class _HomePageState extends State<HomePage> {
 
   void _onSpeechResult(SpeechRecognitionResult result) {
     _controller.text = result.recognizedWords;
-    if (result.finalResult) {
+    if (isWindowsDesktop) {
       _speechListening = false;
+      _speechToText.stop();
+    }
+    if (result.finalResult) {
+      setState(() => _speechListening = false);
     }
     if (mounted) setState(() {});
   }
@@ -175,7 +186,12 @@ class _HomePageState extends State<HomePage> {
           targetLang,
         );
       } else {
-        translationFuture = fetchTranslation(provider, sourceLang, targetLang, tipoGeneracion);
+        translationFuture = fetchTranslation(
+          provider,
+          sourceLang,
+          targetLang,
+          tipoGeneracion,
+        );
       }
     });
   }
@@ -234,6 +250,7 @@ class _HomePageState extends State<HomePage> {
               initialTargetLang: targetLang,
               speechEnabled: _speechEnabled,
             ),
+            const IpaGrid(),
             const DiccionarioView(),
           ],
         ),
@@ -254,6 +271,8 @@ class _HomePageState extends State<HomePage> {
       ),
       backgroundColor: theme.colorScheme.tertiary,
       centerTitle: true,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
       elevation: 0,
       actions: [themeModeMenu(), const SizedBox(width: 8), localeDropdown()],
     );
@@ -266,7 +285,7 @@ class _HomePageState extends State<HomePage> {
     final t = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     return PopupMenuButton<String>(
-      tooltip: 'Theme',
+      tooltip: t.theme,
       color: scheme.primary,
       icon: Icon(Icons.brightness_6, color: isLight ? Colors.black87 : null),
       onSelected: (v) => box.put('themeMode', v),
@@ -387,29 +406,28 @@ class _HomePageState extends State<HomePage> {
             minHeight: 40,
           ),
           suffixIcon: IconButton(
-            tooltip: !isWindowsDesktop
-                ? _speechListening
-                      ? t.stop
-                      : t.start
-                : t.feature_not_available_windows,
-            icon: Icon(
-              _speechListening ? Icons.mic_none : Icons.mic,
-              color: isWindowsDesktop ? Colors.grey : null,
-            ),
+            tooltip: _speechListening ? t.stop : t.start,
+            icon: Icon(_speechListening ? Icons.mic_none : Icons.mic),
             onPressed: !_speechEnabled.value
                 ? null
                 : () async {
-                    if (isWindowsDesktop) {
-                      PopUp.showPopUp(
-                        context,
-                        t.feature_not_available,
-                        t.feature_not_available_windows,
-                      );
-                      return;
+                    if (_speechListening) {
+                      await _stopListening();
+                    } else {
+                      if (!await _isSpeechToTextLanguageInstalled(ttsLocaleFor(sourceLang))) {
+                        if (!mounted) return;
+                        final langs = languages(context);
+                        final langName = langs[sourceLang];
+                        PopUp.showPopUp(
+                          context,
+                          t.error,
+                          t.language_not_installed(langName!),
+                        );
+                        setState(() {});
+                      } else {
+                        await _startListening();
+                      }
                     }
-                    _speechListening
-                        ? await _stopListening()
-                        : await _startListening();
                   },
           ),
         ),
@@ -521,59 +539,65 @@ class _HomePageState extends State<HomePage> {
     final scheme = Theme.of(context).colorScheme;
 
     return Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 20),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Row(
-        mainAxisSize: MainAxisSize.min,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FilledButton.icon(
+                onPressed: _generar,
+                icon: const Icon(Icons.play_arrow),
+                label: Text(isEmpty ? t.generate_translation : t.translate),
+                style: ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(
+                    scheme.secondaryContainer,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Material(
+                color: scheme.onTertiaryFixedVariant,
+                borderRadius: BorderRadius.circular(8.0),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
+                  child: DropdownButton<String>(
+                    isDense: true,
+                    value: tipoGeneracion,
+                    onChanged: (v) => setState(() => tipoGeneracion = v!),
+                    dropdownColor: scheme.primary,
+                    iconEnabledColor: scheme.onSurfaceVariant,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onPrimary,
+                    ),
+                    items: [
+                      DropdownMenuItem(value: 'frase', child: Text(t.frase)),
+                      DropdownMenuItem(value: 'sujeto', child: Text(t.sujeto)),
+                      DropdownMenuItem(value: 'verbo', child: Text(t.verbo)),
+                      DropdownMenuItem(value: 'color', child: Text(t.color)),
+                      DropdownMenuItem(value: 'familia', child: Text(t.familia)),
+                      DropdownMenuItem(value: 'adjetivo', child: Text(t.adjetivo)),
+                      DropdownMenuItem(value: 'direccion', child: Text(t.direccion)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
           FilledButton.icon(
-            onPressed: _generar,
-            icon: const Icon(Icons.play_arrow),
-            label: Text(isEmpty ? t.generate_translation : t.translate),
+            onPressed: _ocr,
+            icon: const Icon(Icons.document_scanner),
+            label: const Text('OCR'),
             style: ButtonStyle(
               backgroundColor: WidgetStatePropertyAll(
                 scheme.secondaryContainer,
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          DropdownButton<String>(
-            value: tipoGeneracion,
-            onChanged: (v) => setState(() => tipoGeneracion = v!),
-            dropdownColor: scheme.primary,
-                    iconEnabledColor: scheme.onSurfaceVariant,
-                    iconDisabledColor: theme.disabledColor,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurface,
-                    ),
-            items: [
-              DropdownMenuItem(value: 'frase', child: Text(t.frase)),
-              DropdownMenuItem(value: 'sujeto', child: Text(t.sujeto)),
-              DropdownMenuItem(value: 'verbo', child: Text(t.verbo)),
-              DropdownMenuItem(value: 'color', child: Text(t.color)),
-              DropdownMenuItem(value: 'familia', child: Text(t.familia)),
-              DropdownMenuItem(value: 'adjetivo', child: Text(t.adjetivo)),
-              DropdownMenuItem(value: 'direccion', child: Text(t.direccion))
-            ],
-          ),
         ],
       ),
-      FilledButton.icon(
-        onPressed: _ocr,
-        icon: const Icon(Icons.document_scanner),
-        label: const Text('OCR'),
-        style: ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll(
-            scheme.secondaryContainer,
-          ),
-        ),
-      ),
-    ],
-  ),
-);
-
+    );
   }
 
   NavigationBar bottomNavBar() {
@@ -582,16 +606,8 @@ class _HomePageState extends State<HomePage> {
     return NavigationBar(
       backgroundColor: scheme.primary,
       selectedIndex: index,
-      indicatorColor: Theme.of(context).colorScheme.onTertiary,
+      indicatorColor: scheme.onTertiary,
       onDestinationSelected: (i) {
-        if (isWindowsDesktop && i == 1) {
-          PopUp.showPopUp(
-            context,
-            t.feature_not_available,
-            t.feature_not_available_windows,
-          );
-          return;
-        }
         setState(() => index = i);
       },
       destinations: [
@@ -601,12 +617,14 @@ class _HomePageState extends State<HomePage> {
           label: t.translate,
         ),
         NavigationDestination(
-          icon: Icon(Icons.mic, color: isWindowsDesktop ? Colors.grey : null),
-          selectedIcon: Icon(
-            Icons.mic_sharp,
-            color: isWindowsDesktop && !kIsWeb ? Colors.grey : null,
-          ),
+          icon: Icon(Icons.mic),
+          selectedIcon: Icon(Icons.mic_sharp),
           label: t.practice,
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.headphones),
+          selectedIcon: Icon(Icons.headphones_sharp),
+          label: 'IPA',
         ),
         NavigationDestination(
           icon: Icon(Icons.menu_book_outlined),
@@ -766,9 +784,7 @@ class TranslationsArea extends StatelessWidget {
                         return;
                       }
 
-                      await tts.changeLanguage(
-                        ttsLocaleFor(item.target),
-                      );
+                      await tts.changeLanguage(ttsLocaleFor(item.target));
                       await tts.speak(item.translatedText);
                     },
                     item.originalText,
@@ -776,7 +792,7 @@ class TranslationsArea extends StatelessWidget {
                   ),
                   copyText: item.translatedText,
                 );
-              }
+              },
             ),
           ],
         );

@@ -179,4 +179,129 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retraducir => 'Retranslate';
+
+  @override
+  String speechNotInstalled(Object lang) {
+    return 'You do not have the $lang language voice pack installed';
+  }
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get ipaPName => 'voiceless bilabial plosive';
+
+  @override
+  String get ipaBName => 'voiced bilabial plosive';
+
+  @override
+  String get ipaTName => 'voiceless alveolar plosive';
+
+  @override
+  String get ipaDName => 'voiced alveolar plosive';
+
+  @override
+  String get ipaKName => 'voiceless velar plosive';
+
+  @override
+  String get ipaGName => 'voiced velar plosive';
+
+  @override
+  String get ipaTeshName => 'voiceless postalveolar affricate';
+
+  @override
+  String get ipaDezhName => 'voiced postalveolar affricate';
+
+  @override
+  String get ipaFName => 'voiceless labiodental fricative';
+
+  @override
+  String get ipaVName => 'voiced labiodental fricative';
+
+  @override
+  String get ipaThetaName => 'voiceless dental fricative';
+
+  @override
+  String get ipaEthName => 'voiced dental fricative';
+
+  @override
+  String get ipaSName => 'voiceless alveolar fricative';
+
+  @override
+  String get ipaZName => 'voiced alveolar fricative';
+
+  @override
+  String get ipaEshName => 'voiceless postalveolar fricative';
+
+  @override
+  String get ipaEzhName => 'voiced postalveolar fricative';
+
+  @override
+  String get ipaHName => 'voiceless glottal fricative';
+
+  @override
+  String get ipaMName => 'bilabial nasal';
+
+  @override
+  String get ipaNName => 'alveolar nasal';
+
+  @override
+  String get ipaEngName => 'velar nasal';
+
+  @override
+  String get ipaLName => 'alveolar lateral approximant';
+
+  @override
+  String get ipaTurnRName => 'alveolar approximant';
+
+  @override
+  String get ipaJName => 'palatal approximant';
+
+  @override
+  String get ipaWName => 'labio-velar approximant';
+
+  @override
+  String get ipaIName => 'close front unrounded vowel';
+
+  @override
+  String get ipaSmallCapitalIName => 'near-close near-front unrounded vowel';
+
+  @override
+  String get ipaEName => 'close-mid front unrounded vowel';
+
+  @override
+  String get ipaEpsilonName => 'open-mid front unrounded vowel';
+
+  @override
+  String get ipaAshName => 'near-open front unrounded vowel';
+
+  @override
+  String get ipaScriptAName => 'open back unrounded vowel';
+
+  @override
+  String get ipaOpenOName => 'open-mid back rounded vowel';
+
+  @override
+  String get ipaOuDiphthongName => 'diphthong';
+
+  @override
+  String get ipaUName => 'close back rounded vowel';
+
+  @override
+  String get ipaUpsilonName => 'near-close near-back rounded vowel';
+
+  @override
+  String get ipaTurnedVName => 'open-mid back unrounded vowel';
+
+  @override
+  String get ipaSchwaName => 'mid central vowel (schwa)';
+
+  @override
+  String get ipaAiDiphthongName => 'diphthong';
+
+  @override
+  String get ipaAuDiphthongName => 'diphthong';
+
+  @override
+  String get ipaOpenOiDiphthongName => 'diphthong';
 }

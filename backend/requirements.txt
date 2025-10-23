@@ -3,18 +3,19 @@
 Flask==3.1.2
 python-dotenv==1.1.1
 requests==2.32.5
-nltk==3.9.1
 flask-cors==6.0.1
 diskcache==5.6.3
 phonemizer==3.3.0
-numpy==2.2.6
+numpy==2.3.4
 pypinyin==0.55.0
-paddleocr==3.2.0
-paddlepaddle-gpu==3.2.0; platform_system == "Windows"
+paddleocr==3.3.0
+paddlepaddle-gpu==3.2.0
 eunjeon==0.4.0
 g2pk2==0.0.3
-epitran==1.26.0
-regex==2025.9.18
+epitran==1.34.0
 pykakasi==2.3.0
 fugashi[unidic-lite]==1.5.1
 jieba==0.42.1
+hangul_romanize==0.1.0
+langdetect==1.0.9
+orjson==3.11.3

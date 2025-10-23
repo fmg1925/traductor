@@ -37,6 +37,12 @@ Future<Translation> ocrFromBytes({
     final translatedIpa = (decoded['translatedIpa'] as List<dynamic>? ?? [])
         .map((e) => e.toString())
         .toList();
+    final originalRomanization = (decoded['originalRomanization'] as List<dynamic>? ?? [])
+        .map((e) => e.toString())
+        .toList();
+    final translatedRomanization = (decoded['translatedRomanization'] as List<dynamic>? ?? [])
+        .map((e) => e.toString())
+        .toList();
     return Translation(
       originalText: originalText,
       translatedText: translated,
@@ -44,6 +50,8 @@ Future<Translation> ocrFromBytes({
       target: target,
       originalIpa: originalIpa,
       translatedIpa: translatedIpa,
+      originalRomanization: originalRomanization,
+      translatedRomanization: translatedRomanization,
     );
   } else {
     throw Exception('Error en ocrFromBytes $provider $bytes $target ${res.statusCode}: $bodyText');

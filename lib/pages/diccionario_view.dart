@@ -29,6 +29,7 @@ class _DiccionarioViewState extends State<DiccionarioView> {
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
+        backgroundColor: scheme.tertiary,
         title: Text(
           t.dictionary,
           style: theme.textTheme.titleMedium?.copyWith(
@@ -38,6 +39,9 @@ class _DiccionarioViewState extends State<DiccionarioView> {
           ),
         ),
         actions: [const SizedBox(width: 8)],
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        elevation: 0,
       ),
       body: ValueListenableBuilder<Box<String>>(
         valueListenable: box.listenable(),
@@ -259,7 +263,6 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                           
                               const SizedBox(width: 4),
                           
-                              // (Opcional) tu menú "más" para borrar
                               IconButton(
                                 tooltip: t.delete,
                                 icon: const Icon(Icons.more_vert),

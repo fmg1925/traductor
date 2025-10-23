@@ -47,9 +47,10 @@ dependencies:
   google_fonts: ^6.3.2
   image_picker: ^1.2.0
   flutter_tts: ^4.2.3
-  speech_to_text: ^7.3.0
+  speech_to_text: ^7.4.0-beta.6
   universal_io: ^2.2.2
   flutter_native_splash: ^2.4.6
+  crypto: ^3.0.6
 
 flutter_launcher_icons:
   android: true

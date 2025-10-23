@@ -79,5 +79,56 @@
   "familia": "Family",
   "adjetivo": "Adjective",
   "direccion": "Directions",
-  "retraducir": "Retranslate"
+  "retraducir": "Retranslate",
+  "speechNotInstalled": "You do not have the {lang} language voice pack installed",
+  "@speechNotInstalled": {
+    "placeholders": {
+      "lang": {}
+    }
+  },
+  "theme": "Theme",
+  "ipaPName": "voiceless bilabial plosive",
+  "ipaBName": "voiced bilabial plosive",
+  "ipaTName": "voiceless alveolar plosive",
+  "ipaDName": "voiced alveolar plosive",
+  "ipaKName": "voiceless velar plosive",
+  "ipaGName": "voiced velar plosive",
+
+  "ipaTeshName": "voiceless postalveolar affricate",
+  "ipaDezhName": "voiced postalveolar affricate",
+
+  "ipaFName": "voiceless labiodental fricative",
+  "ipaVName": "voiced labiodental fricative",
+  "ipaThetaName": "voiceless dental fricative",
+  "ipaEthName": "voiced dental fricative",
+  "ipaSName": "voiceless alveolar fricative",
+  "ipaZName": "voiced alveolar fricative",
+  "ipaEshName": "voiceless postalveolar fricative",
+  "ipaEzhName": "voiced postalveolar fricative",
+  "ipaHName": "voiceless glottal fricative",
+
+  "ipaMName": "bilabial nasal",
+  "ipaNName": "alveolar nasal",
+  "ipaEngName": "velar nasal",
+
+  "ipaLName": "alveolar lateral approximant",
+  "ipaTurnRName": "alveolar approximant",
+  "ipaJName": "palatal approximant",
+  "ipaWName": "labio-velar approximant",
+
+  "ipaIName": "close front unrounded vowel",
+  "ipaSmallCapitalIName": "near-close near-front unrounded vowel",
+  "ipaEName": "close-mid front unrounded vowel",
+  "ipaEpsilonName": "open-mid front unrounded vowel",
+  "ipaAshName": "near-open front unrounded vowel",
+  "ipaScriptAName": "open back unrounded vowel",
+  "ipaOpenOName": "open-mid back rounded vowel",
+  "ipaOuDiphthongName": "diphthong",
+  "ipaUName": "close back rounded vowel",
+  "ipaUpsilonName": "near-close near-back rounded vowel",
+  "ipaTurnedVName": "open-mid back unrounded vowel",
+  "ipaSchwaName": "mid central vowel (schwa)",
+  "ipaAiDiphthongName": "diphthong",
+  "ipaAuDiphthongName": "diphthong",
+  "ipaOpenOiDiphthongName": "diphthong"
 }

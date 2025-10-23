@@ -114,6 +114,8 @@ String ttsLocaleFor(String code) { // Convertir locales a compatibles con TTS
   switch (code) {
     case 'es':
       return 'es-ES';
+    case 'auto':
+      return 'en-US';
     case 'en':
       return 'en-US';
     case 'fr':
@@ -151,6 +153,7 @@ ThemeData appTheme(Brightness brightness) {
           tertiaryFixed: Colors.white,
           onTertiary: Color(0xFF191113),
           onTertiaryFixed: Colors.white,
+          onTertiaryFixedVariant: const Color.fromARGB(145, 233, 30, 128),
         )
       : base.copyWith(
           primary: const Color.fromARGB(255, 255, 255, 255),
@@ -166,6 +169,7 @@ ThemeData appTheme(Brightness brightness) {
           tertiaryFixed: Colors.white,
           onTertiary: Color(0xFFFF007F),
           onTertiaryFixed: Color(0xFFFF007F),
+          onTertiaryFixedVariant: Colors.white,
         );
 
   return ThemeData(

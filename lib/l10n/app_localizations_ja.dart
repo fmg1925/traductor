@@ -178,4 +178,129 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get retraducir => '再翻訳';
+
+  @override
+  String speechNotInstalled(Object lang) {
+    return '$lang の音声認識がインストールされていません。';
+  }
+
+  @override
+  String get theme => 'テーマ';
+
+  @override
+  String get ipaPName => '無声両唇破裂音';
+
+  @override
+  String get ipaBName => '有声両唇破裂音';
+
+  @override
+  String get ipaTName => '無声歯茎破裂音';
+
+  @override
+  String get ipaDName => '有声歯茎破裂音';
+
+  @override
+  String get ipaKName => '無声軟口蓋破裂音';
+
+  @override
+  String get ipaGName => '有声軟口蓋破裂音';
+
+  @override
+  String get ipaTeshName => '無声後部歯茎破擦音';
+
+  @override
+  String get ipaDezhName => '有声後部歯茎破擦音';
+
+  @override
+  String get ipaFName => '無声唇歯摩擦音';
+
+  @override
+  String get ipaVName => '有声唇歯摩擦音';
+
+  @override
+  String get ipaThetaName => '無声歯摩擦音';
+
+  @override
+  String get ipaEthName => '有声歯摩擦音';
+
+  @override
+  String get ipaSName => '無声歯茎摩擦音';
+
+  @override
+  String get ipaZName => '有声歯茎摩擦音';
+
+  @override
+  String get ipaEshName => '無声後部歯茎摩擦音';
+
+  @override
+  String get ipaEzhName => '有声後部歯茎摩擦音';
+
+  @override
+  String get ipaHName => '無声音門摩擦音';
+
+  @override
+  String get ipaMName => '両唇鼻音';
+
+  @override
+  String get ipaNName => '歯茎鼻音';
+
+  @override
+  String get ipaEngName => '軟口蓋鼻音';
+
+  @override
+  String get ipaLName => '歯茎側面接近音';
+
+  @override
+  String get ipaTurnRName => '歯茎接近音';
+
+  @override
+  String get ipaJName => '硬口蓋接近音';
+
+  @override
+  String get ipaWName => '両唇軟口蓋接近音';
+
+  @override
+  String get ipaIName => '前舌狭母音（非円唇）';
+
+  @override
+  String get ipaSmallCapitalIName => '前舌ほぼ狭母音（非円唇）';
+
+  @override
+  String get ipaEName => '前舌半狭母音（非円唇）';
+
+  @override
+  String get ipaEpsilonName => '前舌半広母音（非円唇）';
+
+  @override
+  String get ipaAshName => '前舌ほぼ広母音（非円唇）';
+
+  @override
+  String get ipaScriptAName => '後舌広母音（非円唇）';
+
+  @override
+  String get ipaOpenOName => '後舌半広母音（円唇）';
+
+  @override
+  String get ipaOuDiphthongName => '二重母音';
+
+  @override
+  String get ipaUName => '後舌狭母音（円唇）';
+
+  @override
+  String get ipaUpsilonName => '後舌ほぼ狭母音（円唇）';
+
+  @override
+  String get ipaTurnedVName => '後舌半広母音（非円唇）';
+
+  @override
+  String get ipaSchwaName => '中舌中母音（シュワ）';
+
+  @override
+  String get ipaAiDiphthongName => '二重母音';
+
+  @override
+  String get ipaAuDiphthongName => '二重母音';
+
+  @override
+  String get ipaOpenOiDiphthongName => '二重母音';
 }

@@ -63,14 +63,14 @@ class _PracticeViewState extends State<PracticeView> {
     try {
       await widget.speechToText.listen(
         onResult: _onSpeechResult,
-        localeId: ttsLocaleFor(targetLang),
         listenOptions: SpeechListenOptions(
           listenMode: ListenMode.dictation,
+          localeId: ttsLocaleFor(targetLang),
+          listenFor: const Duration(seconds: 30),
+          pauseFor: const Duration(seconds: 10),
           partialResults: true,
           cancelOnError: true,
         ),
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 10),
       );
       setState(() {});
     } catch (_) {
@@ -426,7 +426,7 @@ class TranslationsArea extends StatelessWidget {
         wordStyle: wordStyle(context),
         ipaStyle: ipaStyle(context),
       ),
-      color: scheme.tertiaryContainer,
+      color: scheme.primary,
       buttons: rightButtons(
         t,
         () async {
@@ -479,7 +479,7 @@ class TranslationsArea extends StatelessWidget {
         wordStyle: wordStyle(context),
         ipaStyle: ipaStyle(context),
       ),
-      color: scheme.tertiaryContainer,
+      color: scheme.primary,
       copyText: item.translatedText,
       buttons: rightButtons(
         t,
@@ -571,7 +571,7 @@ class TranslationsArea extends StatelessWidget {
           ),
         ),
       ),
-      color: scheme.tertiaryContainer,
+      color: scheme.primary,
     );
   }
 
@@ -616,14 +616,4 @@ class TranslationsArea extends StatelessWidget {
       ],
     );
   }
-
-  Widget maxWidth({required Widget child}) => Center(
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 900),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: child,
-      ),
-    ),
-  );
 }

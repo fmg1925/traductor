@@ -421,6 +421,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retranslate'**
   String get retraducir;
+
+  /// No description provided for @speechNotInstalled.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have the {lang} language voice pack installed'**
+  String speechNotInstalled(Object lang);
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @ipaPName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiceless bilabial plosive'**
+  String get ipaPName;
+
+  /// No description provided for @ipaBName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiced bilabial plosive'**
+  String get ipaBName;
+
+  /// No description provided for @ipaTName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiceless alveolar plosive'**
+  String get ipaTName;
+
+  /// No description provided for @ipaDName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiced alveolar plosive'**
+  String get ipaDName;
+
+  /// No description provided for @ipaKName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiceless velar plosive'**
+  String get ipaKName;
+
+  /// No description provided for @ipaGName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiced velar plosive'**
+  String get ipaGName;
+
+  /// No description provided for @ipaTeshName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiceless postalveolar affricate'**
+  String get ipaTeshName;
+
+  /// No description provided for @ipaDezhName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiced postalveolar affricate'**
+  String get ipaDezhName;
+
+  /// No description provided for @ipaFName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiceless labiodental fricative'**
+  String get ipaFName;
+
+  /// No description provided for @ipaVName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiced labiodental fricative'**
+  String get ipaVName;
+
+  /// No description provided for @ipaThetaName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiceless dental fricative'**
+  String get ipaThetaName;
+
+  /// No description provided for @ipaEthName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiced dental fricative'**
+  String get ipaEthName;
+
+  /// No description provided for @ipaSName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiceless alveolar fricative'**
+  String get ipaSName;
+
+  /// No description provided for @ipaZName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiced alveolar fricative'**
+  String get ipaZName;
+
+  /// No description provided for @ipaEshName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiceless postalveolar fricative'**
+  String get ipaEshName;
+
+  /// No description provided for @ipaEzhName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiced postalveolar fricative'**
+  String get ipaEzhName;
+
+  /// No description provided for @ipaHName.
+  ///
+  /// In en, this message translates to:
+  /// **'voiceless glottal fricative'**
+  String get ipaHName;
+
+  /// No description provided for @ipaMName.
+  ///
+  /// In en, this message translates to:
+  /// **'bilabial nasal'**
+  String get ipaMName;
+
+  /// No description provided for @ipaNName.
+  ///
+  /// In en, this message translates to:
+  /// **'alveolar nasal'**
+  String get ipaNName;
+
+  /// No description provided for @ipaEngName.
+  ///
+  /// In en, this message translates to:
+  /// **'velar nasal'**
+  String get ipaEngName;
+
+  /// No description provided for @ipaLName.
+  ///
+  /// In en, this message translates to:
+  /// **'alveolar lateral approximant'**
+  String get ipaLName;
+
+  /// No description provided for @ipaTurnRName.
+  ///
+  /// In en, this message translates to:
+  /// **'alveolar approximant'**
+  String get ipaTurnRName;
+
+  /// No description provided for @ipaJName.
+  ///
+  /// In en, this message translates to:
+  /// **'palatal approximant'**
+  String get ipaJName;
+
+  /// No description provided for @ipaWName.
+  ///
+  /// In en, this message translates to:
+  /// **'labio-velar approximant'**
+  String get ipaWName;
+
+  /// No description provided for @ipaIName.
+  ///
+  /// In en, this message translates to:
+  /// **'close front unrounded vowel'**
+  String get ipaIName;
+
+  /// No description provided for @ipaSmallCapitalIName.
+  ///
+  /// In en, this message translates to:
+  /// **'near-close near-front unrounded vowel'**
+  String get ipaSmallCapitalIName;
+
+  /// No description provided for @ipaEName.
+  ///
+  /// In en, this message translates to:
+  /// **'close-mid front unrounded vowel'**
+  String get ipaEName;
+
+  /// No description provided for @ipaEpsilonName.
+  ///
+  /// In en, this message translates to:
+  /// **'open-mid front unrounded vowel'**
+  String get ipaEpsilonName;
+
+  /// No description provided for @ipaAshName.
+  ///
+  /// In en, this message translates to:
+  /// **'near-open front unrounded vowel'**
+  String get ipaAshName;
+
+  /// No description provided for @ipaScriptAName.
+  ///
+  /// In en, this message translates to:
+  /// **'open back unrounded vowel'**
+  String get ipaScriptAName;
+
+  /// No description provided for @ipaOpenOName.
+  ///
+  /// In en, this message translates to:
+  /// **'open-mid back rounded vowel'**
+  String get ipaOpenOName;
+
+  /// No description provided for @ipaOuDiphthongName.
+  ///
+  /// In en, this message translates to:
+  /// **'diphthong'**
+  String get ipaOuDiphthongName;
+
+  /// No description provided for @ipaUName.
+  ///
+  /// In en, this message translates to:
+  /// **'close back rounded vowel'**
+  String get ipaUName;
+
+  /// No description provided for @ipaUpsilonName.
+  ///
+  /// In en, this message translates to:
+  /// **'near-close near-back rounded vowel'**
+  String get ipaUpsilonName;
+
+  /// No description provided for @ipaTurnedVName.
+  ///
+  /// In en, this message translates to:
+  /// **'open-mid back unrounded vowel'**
+  String get ipaTurnedVName;
+
+  /// No description provided for @ipaSchwaName.
+  ///
+  /// In en, this message translates to:
+  /// **'mid central vowel (schwa)'**
+  String get ipaSchwaName;
+
+  /// No description provided for @ipaAiDiphthongName.
+  ///
+  /// In en, this message translates to:
+  /// **'diphthong'**
+  String get ipaAiDiphthongName;
+
+  /// No description provided for @ipaAuDiphthongName.
+  ///
+  /// In en, this message translates to:
+  /// **'diphthong'**
+  String get ipaAuDiphthongName;
+
+  /// No description provided for @ipaOpenOiDiphthongName.
+  ///
+  /// In en, this message translates to:
+  /// **'diphthong'**
+  String get ipaOpenOiDiphthongName;
 }
 
 class _AppLocalizationsDelegate

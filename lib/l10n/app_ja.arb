@@ -79,5 +79,56 @@
   "familia": "家族",
   "adjetivo": "形容詞",
   "direccion": "経路",
-  "retraducir": "再翻訳"
+  "retraducir": "再翻訳",
+  "speechNotInstalled": "{lang} の音声認識がインストールされていません。",
+  "@speechNotInstalled": {
+    "placeholders": {
+      "lang": {}
+    }
+  },
+  "theme": "テーマ",
+  "ipaPName": "無声両唇破裂音",
+  "ipaBName": "有声両唇破裂音",
+  "ipaTName": "無声歯茎破裂音",
+  "ipaDName": "有声歯茎破裂音",
+  "ipaKName": "無声軟口蓋破裂音",
+  "ipaGName": "有声軟口蓋破裂音",
+
+  "ipaTeshName": "無声後部歯茎破擦音",
+  "ipaDezhName": "有声後部歯茎破擦音",
+
+  "ipaFName": "無声唇歯摩擦音",
+  "ipaVName": "有声唇歯摩擦音",
+  "ipaThetaName": "無声歯摩擦音",
+  "ipaEthName": "有声歯摩擦音",
+  "ipaSName": "無声歯茎摩擦音",
+  "ipaZName": "有声歯茎摩擦音",
+  "ipaEshName": "無声後部歯茎摩擦音",
+  "ipaEzhName": "有声後部歯茎摩擦音",
+  "ipaHName": "無声音門摩擦音",
+
+  "ipaMName": "両唇鼻音",
+  "ipaNName": "歯茎鼻音",
+  "ipaEngName": "軟口蓋鼻音",
+
+  "ipaLName": "歯茎側面接近音",
+  "ipaTurnRName": "歯茎接近音",
+  "ipaJName": "硬口蓋接近音",
+  "ipaWName": "両唇軟口蓋接近音",
+
+  "ipaIName": "前舌狭母音（非円唇）",
+  "ipaSmallCapitalIName": "前舌ほぼ狭母音（非円唇）",
+  "ipaEName": "前舌半狭母音（非円唇）",
+  "ipaEpsilonName": "前舌半広母音（非円唇）",
+  "ipaAshName": "前舌ほぼ広母音（非円唇）",
+  "ipaScriptAName": "後舌広母音（非円唇）",
+  "ipaOpenOName": "後舌半広母音（円唇）",
+  "ipaOuDiphthongName": "二重母音",
+  "ipaUName": "後舌狭母音（円唇）",
+  "ipaUpsilonName": "後舌ほぼ狭母音（円唇）",
+  "ipaTurnedVName": "後舌半広母音（非円唇）",
+  "ipaSchwaName": "中舌中母音（シュワ）",
+  "ipaAiDiphthongName": "二重母音",
+  "ipaAuDiphthongName": "二重母音",
+  "ipaOpenOiDiphthongName": "二重母音"
 }

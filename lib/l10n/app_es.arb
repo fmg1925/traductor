@@ -79,5 +79,56 @@
   "familia": "Familia",
   "adjetivo": "Adjetivo",
   "direccion": "Direcciones",
-  "retraducir": "Retraducir"
+  "retraducir": "Retraducir",
+  "speechNotInstalled": "No tienes instalado el reconocimiento de voz de {lang}.",
+  "@speechNotInstalled": {
+    "placeholders": {
+      "lang": {}
+    }
+  },
+  "theme": "Tema",
+  "ipaPName": "oclusiva bilabial sorda",
+  "ipaBName": "oclusiva bilabial sonora",
+  "ipaTName": "oclusiva alveolar sorda",
+  "ipaDName": "oclusiva alveolar sonora",
+  "ipaKName": "oclusiva velar sorda",
+  "ipaGName": "oclusiva velar sonora",
+
+  "ipaTeshName": "africada postalveolar sorda",
+  "ipaDezhName": "africada postalveolar sonora",
+
+  "ipaFName": "fricativa labiodental sorda",
+  "ipaVName": "fricativa labiodental sonora",
+  "ipaThetaName": "fricativa dental sorda",
+  "ipaEthName": "fricativa dental sonora",
+  "ipaSName": "fricativa alveolar sorda",
+  "ipaZName": "fricativa alveolar sonora",
+  "ipaEshName": "fricativa postalveolar sorda",
+  "ipaEzhName": "fricativa postalveolar sonora",
+  "ipaHName": "fricativa glotal sorda",
+
+  "ipaMName": "nasal bilabial",
+  "ipaNName": "nasal alveolar",
+  "ipaEngName": "nasal velar",
+
+  "ipaLName": "lateral alveolar",
+  "ipaTurnRName": "aproximante alveolar",
+  "ipaJName": "aproximante palatal",
+  "ipaWName": "aproximante labiovelar",
+
+  "ipaIName": "vocal anterior cerrada no redondeada",
+  "ipaSmallCapitalIName": "vocal casi cerrada casi anterior no redondeada",
+  "ipaEName": "vocal anterior media-cerrada no redondeada",
+  "ipaEpsilonName": "vocal anterior media-abierta no redondeada",
+  "ipaAshName": "vocal casi abierta anterior no redondeada",
+  "ipaScriptAName": "vocal posterior abierta no redondeada",
+  "ipaOpenOName": "vocal posterior media-abierta redondeada",
+  "ipaOuDiphthongName": "diptongo",
+  "ipaUName": "vocal posterior cerrada redondeada",
+  "ipaUpsilonName": "vocal casi cerrada casi posterior redondeada",
+  "ipaTurnedVName": "vocal posterior media-abierta no redondeada",
+  "ipaSchwaName": "vocal central media (schwa)",
+  "ipaAiDiphthongName": "diptongo",
+  "ipaAuDiphthongName": "diptongo",
+  "ipaOpenOiDiphthongName": "diptongo"
 }

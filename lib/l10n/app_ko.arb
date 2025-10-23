@@ -79,5 +79,56 @@
   "familia": "가족",
   "adjetivo": "형용사",
   "direccion": "길찾기",
-  "retraducir": "다시 번역"
+  "retraducir": "다시 번역",
+  "speechNotInstalled": "{lang} 음성 인식이 설치되어 있지 않습니다.",
+  "@speechNotInstalled": {
+    "placeholders": {
+      "lang": {}
+    }
+  },
+  "theme": "테마",
+  "ipaPName": "무성 양순 파열음",
+  "ipaBName": "유성 양순 파열음",
+  "ipaTName": "무성 치조 파열음",
+  "ipaDName": "유성 치조 파열음",
+  "ipaKName": "무성 연구개 파열음",
+  "ipaGName": "유성 연구개 파열음",
+
+  "ipaTeshName": "무성 후치경 파찰음",
+  "ipaDezhName": "유성 후치경 파찰음",
+
+  "ipaFName": "무성 순치 마찰음",
+  "ipaVName": "유성 순치 마찰음",
+  "ipaThetaName": "무성 치간 마찰음",
+  "ipaEthName": "유성 치간 마찰음",
+  "ipaSName": "무성 치조 마찰음",
+  "ipaZName": "유성 치조 마찰음",
+  "ipaEshName": "무성 후치경 마찰음",
+  "ipaEzhName": "유성 후치경 마찰음",
+  "ipaHName": "무성 성문 마찰음",
+
+  "ipaMName": "양순 비음",
+  "ipaNName": "치조 비음",
+  "ipaEngName": "연구개 비음",
+
+  "ipaLName": "치조 설측 접근음",
+  "ipaTurnRName": "치조 접근음",
+  "ipaJName": "경구개 접근음",
+  "ipaWName": "양순-연구개 접근음",
+
+  "ipaIName": "전설 고모음 비원순",
+  "ipaSmallCapitalIName": "전설 근고모음 비원순",
+  "ipaEName": "전설 중고모음 비원순",
+  "ipaEpsilonName": "전설 중저모음 비원순",
+  "ipaAshName": "전설 근저모음 비원순",
+  "ipaScriptAName": "후설 저모음 비원순",
+  "ipaOpenOName": "후설 중저모음 원순",
+  "ipaOuDiphthongName": "이중모음",
+  "ipaUName": "후설 고모음 원순",
+  "ipaUpsilonName": "후설 근고모음 원순",
+  "ipaTurnedVName": "후설 중저모음 비원순",
+  "ipaSchwaName": "중설 중모음 (슈와)",
+  "ipaAiDiphthongName": "이중모음",
+  "ipaAuDiphthongName": "이중모음",
+  "ipaOpenOiDiphthongName": "이중모음"
 }

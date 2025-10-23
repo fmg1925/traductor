@@ -79,5 +79,56 @@
   "familia": "家庭",
   "adjetivo": "形容词",
   "direccion": "路线",
-  "retraducir": "重新翻译"
+  "retraducir": "重新翻译",
+  "speechNotInstalled": "未安装 {lang} 语音识别功能。",
+  "@speechNotInstalled": {
+    "placeholders": {
+      "lang": {}
+    }
+  },
+  "theme": "主题",
+  "ipaPName": "清双唇塞音",
+  "ipaBName": "浊双唇塞音",
+  "ipaTName": "清齿龈塞音",
+  "ipaDName": "浊齿龈塞音",
+  "ipaKName": "清软腭塞音",
+  "ipaGName": "浊软腭塞音",
+
+  "ipaTeshName": "清后齿龈塞擦音",
+  "ipaDezhName": "浊后齿龈塞擦音",
+
+  "ipaFName": "清唇齿擦音",
+  "ipaVName": "浊唇齿擦音",
+  "ipaThetaName": "清齿擦音",
+  "ipaEthName": "浊齿擦音",
+  "ipaSName": "清齿龈擦音",
+  "ipaZName": "浊齿龈擦音",
+  "ipaEshName": "清后齿龈擦音",
+  "ipaEzhName": "浊后齿龈擦音",
+  "ipaHName": "清声门擦音",
+
+  "ipaMName": "双唇鼻音",
+  "ipaNName": "齿龈鼻音",
+  "ipaEngName": "软腭鼻音",
+
+  "ipaLName": "齿龈边近音",
+  "ipaTurnRName": "齿龈近音",
+  "ipaJName": "硬腭近音",
+  "ipaWName": "双唇软腭近音",
+
+  "ipaIName": "前高不圆唇元音",
+  "ipaSmallCapitalIName": "近前近高不圆唇元音",
+  "ipaEName": "前次闭不圆唇元音",
+  "ipaEpsilonName": "前次开不圆唇元音",
+  "ipaAshName": "近前近低不圆唇元音",
+  "ipaScriptAName": "后低不圆唇元音",
+  "ipaOpenOName": "后次开圆唇元音",
+  "ipaOuDiphthongName": "双元音",
+  "ipaUName": "后高圆唇元音",
+  "ipaUpsilonName": "近后近高圆唇元音",
+  "ipaTurnedVName": "后次开不圆唇元音",
+  "ipaSchwaName": "中元音（央中元音，舒化）",
+  "ipaAiDiphthongName": "双元音",
+  "ipaAuDiphthongName": "双元音",
+  "ipaOpenOiDiphthongName": "双元音"
 }

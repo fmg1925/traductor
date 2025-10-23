@@ -180,4 +180,130 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get retraducir => 'Retraducir';
+
+  @override
+  String speechNotInstalled(Object lang) {
+    return 'No tienes instalado el reconocimiento de voz de $lang.';
+  }
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get ipaPName => 'oclusiva bilabial sorda';
+
+  @override
+  String get ipaBName => 'oclusiva bilabial sonora';
+
+  @override
+  String get ipaTName => 'oclusiva alveolar sorda';
+
+  @override
+  String get ipaDName => 'oclusiva alveolar sonora';
+
+  @override
+  String get ipaKName => 'oclusiva velar sorda';
+
+  @override
+  String get ipaGName => 'oclusiva velar sonora';
+
+  @override
+  String get ipaTeshName => 'africada postalveolar sorda';
+
+  @override
+  String get ipaDezhName => 'africada postalveolar sonora';
+
+  @override
+  String get ipaFName => 'fricativa labiodental sorda';
+
+  @override
+  String get ipaVName => 'fricativa labiodental sonora';
+
+  @override
+  String get ipaThetaName => 'fricativa dental sorda';
+
+  @override
+  String get ipaEthName => 'fricativa dental sonora';
+
+  @override
+  String get ipaSName => 'fricativa alveolar sorda';
+
+  @override
+  String get ipaZName => 'fricativa alveolar sonora';
+
+  @override
+  String get ipaEshName => 'fricativa postalveolar sorda';
+
+  @override
+  String get ipaEzhName => 'fricativa postalveolar sonora';
+
+  @override
+  String get ipaHName => 'fricativa glotal sorda';
+
+  @override
+  String get ipaMName => 'nasal bilabial';
+
+  @override
+  String get ipaNName => 'nasal alveolar';
+
+  @override
+  String get ipaEngName => 'nasal velar';
+
+  @override
+  String get ipaLName => 'lateral alveolar';
+
+  @override
+  String get ipaTurnRName => 'aproximante alveolar';
+
+  @override
+  String get ipaJName => 'aproximante palatal';
+
+  @override
+  String get ipaWName => 'aproximante labiovelar';
+
+  @override
+  String get ipaIName => 'vocal anterior cerrada no redondeada';
+
+  @override
+  String get ipaSmallCapitalIName =>
+      'vocal casi cerrada casi anterior no redondeada';
+
+  @override
+  String get ipaEName => 'vocal anterior media-cerrada no redondeada';
+
+  @override
+  String get ipaEpsilonName => 'vocal anterior media-abierta no redondeada';
+
+  @override
+  String get ipaAshName => 'vocal casi abierta anterior no redondeada';
+
+  @override
+  String get ipaScriptAName => 'vocal posterior abierta no redondeada';
+
+  @override
+  String get ipaOpenOName => 'vocal posterior media-abierta redondeada';
+
+  @override
+  String get ipaOuDiphthongName => 'diptongo';
+
+  @override
+  String get ipaUName => 'vocal posterior cerrada redondeada';
+
+  @override
+  String get ipaUpsilonName => 'vocal casi cerrada casi posterior redondeada';
+
+  @override
+  String get ipaTurnedVName => 'vocal posterior media-abierta no redondeada';
+
+  @override
+  String get ipaSchwaName => 'vocal central media (schwa)';
+
+  @override
+  String get ipaAiDiphthongName => 'diptongo';
+
+  @override
+  String get ipaAuDiphthongName => 'diptongo';
+
+  @override
+  String get ipaOpenOiDiphthongName => 'diptongo';
 }

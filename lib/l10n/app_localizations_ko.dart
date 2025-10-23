@@ -178,4 +178,129 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get retraducir => '다시 번역';
+
+  @override
+  String speechNotInstalled(Object lang) {
+    return '$lang 음성 인식이 설치되어 있지 않습니다.';
+  }
+
+  @override
+  String get theme => '테마';
+
+  @override
+  String get ipaPName => '무성 양순 파열음';
+
+  @override
+  String get ipaBName => '유성 양순 파열음';
+
+  @override
+  String get ipaTName => '무성 치조 파열음';
+
+  @override
+  String get ipaDName => '유성 치조 파열음';
+
+  @override
+  String get ipaKName => '무성 연구개 파열음';
+
+  @override
+  String get ipaGName => '유성 연구개 파열음';
+
+  @override
+  String get ipaTeshName => '무성 후치경 파찰음';
+
+  @override
+  String get ipaDezhName => '유성 후치경 파찰음';
+
+  @override
+  String get ipaFName => '무성 순치 마찰음';
+
+  @override
+  String get ipaVName => '유성 순치 마찰음';
+
+  @override
+  String get ipaThetaName => '무성 치간 마찰음';
+
+  @override
+  String get ipaEthName => '유성 치간 마찰음';
+
+  @override
+  String get ipaSName => '무성 치조 마찰음';
+
+  @override
+  String get ipaZName => '유성 치조 마찰음';
+
+  @override
+  String get ipaEshName => '무성 후치경 마찰음';
+
+  @override
+  String get ipaEzhName => '유성 후치경 마찰음';
+
+  @override
+  String get ipaHName => '무성 성문 마찰음';
+
+  @override
+  String get ipaMName => '양순 비음';
+
+  @override
+  String get ipaNName => '치조 비음';
+
+  @override
+  String get ipaEngName => '연구개 비음';
+
+  @override
+  String get ipaLName => '치조 설측 접근음';
+
+  @override
+  String get ipaTurnRName => '치조 접근음';
+
+  @override
+  String get ipaJName => '경구개 접근음';
+
+  @override
+  String get ipaWName => '양순-연구개 접근음';
+
+  @override
+  String get ipaIName => '전설 고모음 비원순';
+
+  @override
+  String get ipaSmallCapitalIName => '전설 근고모음 비원순';
+
+  @override
+  String get ipaEName => '전설 중고모음 비원순';
+
+  @override
+  String get ipaEpsilonName => '전설 중저모음 비원순';
+
+  @override
+  String get ipaAshName => '전설 근저모음 비원순';
+
+  @override
+  String get ipaScriptAName => '후설 저모음 비원순';
+
+  @override
+  String get ipaOpenOName => '후설 중저모음 원순';
+
+  @override
+  String get ipaOuDiphthongName => '이중모음';
+
+  @override
+  String get ipaUName => '후설 고모음 원순';
+
+  @override
+  String get ipaUpsilonName => '후설 근고모음 원순';
+
+  @override
+  String get ipaTurnedVName => '후설 중저모음 비원순';
+
+  @override
+  String get ipaSchwaName => '중설 중모음 (슈와)';
+
+  @override
+  String get ipaAiDiphthongName => '이중모음';
+
+  @override
+  String get ipaAuDiphthongName => '이중모음';
+
+  @override
+  String get ipaOpenOiDiphthongName => '이중모음';
 }

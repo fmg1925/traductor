@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../entities/translation.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../helpers/cache.dart';
+import 'package:crypto/crypto.dart';
  
 class DataProvider {
   DataProvider({http.Client? client})
@@ -14,10 +15,10 @@ class DataProvider {
   final RequestLimiter limiter;
 
   Uri get uri => kIsWeb
-      ? Uri.parse('https://herpetologic-nonmelodiously-maudie.ngrok-free.dev')
+      ? Uri.parse('http://172.19.226.182:3000')
       : (Platform.isAndroid
-          ? Uri.parse('https://herpetologic-nonmelodiously-maudie.ngrok-free.dev')
-          : Uri.parse('https://herpetologic-nonmelodiously-maudie.ngrok-free.dev'));
+          ? Uri.parse('http://10.0.2.2:3000')
+          : Uri.parse('http://127.0.0.1:3000'));
 
   void dispose() => _client.close();
 
@@ -64,7 +65,8 @@ Future<Translation> fetchTranslationFor(
   String target,
 ) async {
   final norm = text.trim().replaceAll(RegExp(r'\s+'), ' ');
-  final key = 'translate|$source|$target|${norm.hashCode}';
+  final digest = md5.convert(utf8.encode(norm)).toString();
+  final key = 'translate|$source|$target|$digest';
 
   return provider.limiter.run<Translation>(key, () async {
     final res = await provider.post(
@@ -83,6 +85,8 @@ Future<Translation> fetchTranslationFor(
 
       final originalIpa = (decoded['originalIpa'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
       final translatedIpa = (decoded['translatedIpa'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+      final originalRomanization = (decoded['originalRomanization'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+      final translatedRomanization = (decoded['translatedRomanization'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
 
       return Translation(
         originalText: norm,
@@ -91,11 +95,77 @@ Future<Translation> fetchTranslationFor(
         target: target,
         originalIpa: originalIpa,
         translatedIpa: translatedIpa,
+        originalRomanization: originalRomanization,
+        translatedRomanization: translatedRomanization
       );
     }
     throw Exception('HTTP ${res.statusCode}: $bodyText');
   }, cache: true);
 }
+
+Future<Translation> retranslate(
+  DataProvider provider,
+  String text,
+  String source,
+  String target,
+) async {
+  final norm = text.trim().replaceAll(RegExp(r'\s+'), ' ');
+  final digest = md5.convert(utf8.encode(norm)).toString();
+  final key = 'translate|$source|$target|$digest';
+
+  return provider.limiter.run<Translation>(
+    key,
+    () async {
+      final res = await provider.post(
+        Uri.parse('${provider.uri}/retranslate'),
+        headers: const {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+        body: jsonEncode({
+          'q': norm,
+          'source': source,
+          'target': target,
+          'format': 'text',
+          // si tu backend soporta forzar recálculo, agrega un nonce opcional:
+          '_': DateTime.now().millisecondsSinceEpoch
+        }),
+      );
+
+      final bodyText = utf8.decode(res.bodyBytes);
+      if (res.statusCode != 200 && res.statusCode != 207) {
+        throw Exception('HTTP ${res.statusCode}: $bodyText');
+      }
+
+      final decoded = jsonDecode(bodyText) as Map<String, dynamic>;
+      final translated = decoded['translatedText'] as String? ?? '';
+      final dl = decoded['detectedLanguage'];
+      String detectedLanguage = dl is Map ? (dl['language'] as String? ?? '') : (dl as String? ?? '');
+      detectedLanguage = detectedLanguage.substring(0, detectedLanguage.isEmpty ? 0 : 2);
+
+      final originalIpa = (decoded['originalIpa'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+      final translatedIpa = (decoded['translatedIpa'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+      final originalRomanization = (decoded['originalRomanization'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+      final translatedRomanization = (decoded['translatedRomanization'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+
+      final tx = Translation(
+        originalText: norm,
+        translatedText: translated,
+        detectedLanguage: detectedLanguage,
+        target: target,
+        originalIpa: originalIpa,
+        translatedIpa: translatedIpa,
+        originalRomanization: originalRomanization,
+        translatedRomanization: translatedRomanization,
+      );
+      return tx;
+    },
+    cache: false,
+  );
+}
+
 
 Future<String> translateWord({
   required DataProvider provider,

@@ -3,8 +3,9 @@ import 'dart:async';
 class _CacheEntry<T> {
   _CacheEntry(this.value, this.expiresAt);
   final T value;
-  final DateTime expiresAt;
-  bool get isFresh => DateTime.now().isBefore(expiresAt);
+  final DateTime? expiresAt;
+  bool get isFresh => expiresAt == null ||
+      DateTime.now().isBefore(expiresAt!);
 }
 
 class RequestLimiter {
@@ -43,7 +44,10 @@ class RequestLimiter {
     try {
       final result = await future;
       if (cache) {
-        _cache[key] = _CacheEntry<T>(result, DateTime.now().add(cacheTtl));
+        final expiry = cacheTtl == Duration.zero
+            ? null
+            : DateTime.now().add(cacheTtl);
+        _cache[key] = _CacheEntry<T>(result, expiry);
       }
       return result;
     } finally {

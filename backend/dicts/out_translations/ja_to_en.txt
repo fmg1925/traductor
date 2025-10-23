@@ -1,0 +1,167 @@
+Where is the toilet?
+Where is the airport?
+Where is the bus stop?
+Where is the station?
+Where is the subway station?
+Where is the taxi stand?
+Where is the hotel?
+Where is the hostel?
+Where is the reception?
+Where is the front desk?
+Where is the information?
+Where is the tourist information office?
+Where is the embassy?
+Where is the consulate?
+Where is the police station?
+Where is the hospital?
+Where is the clinic?
+Where is the pharmacy?
+Where is the dentist?
+Where is the doctor?
+Where is the library?
+Where is the art museum?
+Where is the theater?
+Where is the movie theater?
+Where is the park?
+Where is the stadium?
+Where is the beach?
+Where is the bank?
+Where is the ATM?
+Where is the supermarket?
+Where is the convenience store?
+Where is the bakery?
+Where is the butcher shop?
+Where is the market?
+Where is the shopping mall?
+Where is the department store?
+Where is the post office?
+Where is the city hall?
+Where is the courthouse?
+Where is the university?
+Where is the school?
+Where is the cafeteria?
+Where is the restaurant?
+Where is the cafe?
+Where is the bar?
+Where is the classroom?
+Where is the parking lot?
+Where is the gas station?
+Where is the charging station?
+Where is the car rental place?
+Where is the entrance?
+Where is the exit?
+Where are the stairs?
+Where is the escalator?
+Where is the elevator?
+Where is the boarding gate?
+Where are the drawers for luggage?
+Where is the ticket booth?
+Where is the security checkpoint?
+Where is immigration?
+Where is the locker?
+Where is customs?
+Where is the amusement park?
+Where is the laundry?
+Where is the aquarium?
+Where is the campsite?
+Where is Jim?
+Where is the river?
+Where is the church?
+Where is the mosque?
+Where is the temple?
+Where is the meeting place?
+Where is the counter at the drugstore?
+Where is the zoo?
+Where is the barbershop?
+Where is the office for receiving packages?
+Where is the bridge?
+Where are the spices?
+Where is the beauty salon?
+Where is the cathedral?
+Where is the synagogue?
+What is the view like?
+Where is the information desk?
+Where is the exhibition?
+Where is the tourist information center?
+Where is the dentist's office?
+Where is the seashore?
+Where is the playground?
+Where is the store located?
+Where is the rental car?
+Where is the restroom?
+Where is the sign shop?
+Where is the safety inspection stand?
+Where is the place to look for luggage?
+Where is the immigration office?
+Where is the meeting room?
+Where is the deposit counter?
+Where is the viewing platform?
+Where are your feet?
+Where is the health gym?
+Where are the soaps?
+Where is the subway?
+Where is the taxi?
+Where is the inn?
+Where is the front?
+Where is the museum?
+Where is the gymnasium?
+Where is the automatic teller machine?
+Where is the shopping center?
+Where is the coffee shop?
+Where are car rentals?
+Where is the ticket?
+Where are the drawers for the luggage?
+Where is the examination?
+Where is the customs office?
+Where is the Immigration Office?
+Where is the fitness gym?
+Where is the baggage claim?
+Where is the observation deck?
+Where is the counter in the pharmacy?
+Where is the washing machine?
+Where is the hot spring?
+Where is the Seijitsu-ji Temple?
+Where is the exhibit?
+Where is the taxi stopped?
+Where is your inbox?
+Where is the location of the information?
+Where are the car rentals?
+Where is the store?
+Where is the bookstore?
+Where are the things?
+Where is the safety inspection?
+Where are the clothes?
+Where is your foot?
+Where is the train station?
+Where is the information counter?
+Where is the movie?
+Where is the vending machine?
+Where is the grocery store?
+Where is the coffee?
+Where is the baggage claim area?
+Where are the immigrants?
+Where are the laundry clothes?
+Where is the apothecary's box?
+Who is the recipient?
+Where is the dental clinic?
+Where is the police box?
+Where is the poster shop?
+Where is the place to check luggage?
+Where is the safety inspection team?
+Where are you?
+Where is the spa?
+Where is the information center?
+Where is the tourist information center
+Where is the car rental shop?
+Where is the security control?
+Where is the observation platform?
+Where is the baggage claim counter?
+Where will the meeting be held?
+Where is the input box?
+Where is the suitcase?
+Where is it?
+Where is the shirt?
+Where is the safety inspection station
+Where is the baggage counter?
+Where is the watchtower?
+Where is the spa center?

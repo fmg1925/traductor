@@ -50,5 +50,5 @@ backend/.venv
 __pycache__
 .gradle
 .kotlin
-.cache
+.cache*
 informe/
