@@ -9,7 +9,7 @@ from unicodedata import normalize
 from g2pk2 import G2p
 from hangul_romanize import Transliter
 from hangul_romanize.rule import academic
-from fugashi import Tagger  # type: ignore
+from fugashi import Tagger # type: ignore
 import epitran
 import jieba
 from pykakasi import kakasi
@@ -149,7 +149,7 @@ def ipa_word(sentence: str, lang_code: str) -> list[str]:
             continue
         t2 = re.sub(r"[’'/_\-]+", "", t)
         t2 = t2.strip()
-        if not t2 or not any(ch.isalnum() for ch in t2):
+        if not t2 or not any(ch.isalpha() for ch in t2):
             continue
         sanitized.append(t2)
     

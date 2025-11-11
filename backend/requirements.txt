@@ -1,4 +1,4 @@
---extra-index-url https://www.paddlepaddle.org.cn/packages/stable/cu129/
+-i https://www.paddlepaddle.org.cn/packages/stable/cu129/
 
 Flask==3.1.2
 python-dotenv==1.1.1
@@ -8,7 +8,6 @@ diskcache==5.6.3
 phonemizer==3.3.0
 numpy==2.3.4
 pypinyin==0.55.0
-paddleocr==3.3.0
 paddlepaddle-gpu==3.2.0
 eunjeon==0.4.0
 g2pk2==0.0.3

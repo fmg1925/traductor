@@ -306,4 +306,59 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get ipaOpenOiDiphthongName => 'diptongo';
+
+  @override
+  String get network_error => 'Error de red. Revisa tu conexión.';
+
+  @override
+  String get timeout => 'La solicitud excedió el tiempo de espera.';
+
+  @override
+  String get ssl_error => 'Falló la conexión segura (SSL).';
+
+  @override
+  String get canceled => 'Solicitud cancelada.';
+
+  @override
+  String get bad_request => 'Solicitud incorrecta.';
+
+  @override
+  String get unauthorized => 'No autorizado. Inicia sesión.';
+
+  @override
+  String get forbidden => 'Acceso denegado.';
+
+  @override
+  String get not_found => 'Servidor offline / no encontrado.';
+
+  @override
+  String get method_not_allowed => 'Método no permitido.';
+
+  @override
+  String get conflict => 'Conflicto.';
+
+  @override
+  String get unprocessable_entity => 'Entidad no procesable.';
+
+  @override
+  String get too_many_requests =>
+      'Demasiadas solicitudes. Inténtalo más tarde.';
+
+  @override
+  String get server_error => 'Error interno del servidor.';
+
+  @override
+  String get bad_gateway => 'Puerta de enlace incorrecta.';
+
+  @override
+  String get service_unavailable => 'Servicio no disponible.';
+
+  @override
+  String get gateway_timeout => 'Tiempo de espera de la puerta de enlace.';
+
+  @override
+  String get unknown_error => 'Error inesperado.';
+
+  @override
+  String get no_text_in_ocr => 'No se detectó texto en el OCR.';
 }

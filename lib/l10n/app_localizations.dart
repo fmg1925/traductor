@@ -667,6 +667,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'diphthong'**
   String get ipaOpenOiDiphthongName;
+
+  /// No description provided for @network_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Check your connection.'**
+  String get network_error;
+
+  /// No description provided for @timeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Request timed out.'**
+  String get timeout;
+
+  /// No description provided for @ssl_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure connection failed (SSL).'**
+  String get ssl_error;
+
+  /// No description provided for @canceled.
+  ///
+  /// In en, this message translates to:
+  /// **'Request canceled.'**
+  String get canceled;
+
+  /// No description provided for @bad_request.
+  ///
+  /// In en, this message translates to:
+  /// **'Bad request.'**
+  String get bad_request;
+
+  /// No description provided for @unauthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Unauthorized. Please sign in.'**
+  String get unauthorized;
+
+  /// No description provided for @forbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Forbidden.'**
+  String get forbidden;
+
+  /// No description provided for @not_found.
+  ///
+  /// In en, this message translates to:
+  /// **'Server offline / resource not found.'**
+  String get not_found;
+
+  /// No description provided for @method_not_allowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Method not allowed.'**
+  String get method_not_allowed;
+
+  /// No description provided for @conflict.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflict.'**
+  String get conflict;
+
+  /// No description provided for @unprocessable_entity.
+  ///
+  /// In en, this message translates to:
+  /// **'Unprocessable entity.'**
+  String get unprocessable_entity;
+
+  /// No description provided for @too_many_requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Try again later.'**
+  String get too_many_requests;
+
+  /// No description provided for @server_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Internal server error.'**
+  String get server_error;
+
+  /// No description provided for @bad_gateway.
+  ///
+  /// In en, this message translates to:
+  /// **'Bad gateway.'**
+  String get bad_gateway;
+
+  /// No description provided for @service_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Service unavailable.'**
+  String get service_unavailable;
+
+  /// No description provided for @gateway_timeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway timeout.'**
+  String get gateway_timeout;
+
+  /// No description provided for @unknown_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Unexpected error.'**
+  String get unknown_error;
+
+  /// No description provided for @no_text_in_ocr.
+  ///
+  /// In en, this message translates to:
+  /// **'No text detected in OCR.'**
+  String get no_text_in_ocr;
 }
 
 class _AppLocalizationsDelegate

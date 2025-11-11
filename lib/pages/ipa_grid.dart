@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:traductor/l10n/app_localizations.dart';
+import 'package:traductor/main.dart' show ttsLocaleFor;
 import 'package:traductor/pages/home.dart' show tts;
+import 'package:universal_io/io.dart';
 
 class IpaGrid extends StatefulWidget {
   const IpaGrid({super.key});
@@ -122,8 +124,8 @@ class _IpaGridState extends State<IpaGrid> {
       ),
       body: GridView.builder(
         padding: const EdgeInsets.all(12),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4, mainAxisSpacing: 8, crossAxisSpacing: 8, childAspectRatio: 2,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: Platform.isAndroid ? 2 : 4, mainAxisSpacing: 6, crossAxisSpacing: 8, childAspectRatio: Platform.isAndroid ? 1 : 2,
         ),
         itemCount: _symbols.length,
         itemBuilder: (context, i) {
@@ -133,8 +135,8 @@ class _IpaGridState extends State<IpaGrid> {
 
           return InkWell(
             onTap: () async {
-              tts.changeLanguage('en'); 
-              tts.speak(example); },
+              await tts.changeLanguage(ttsLocaleFor('en'));
+              await tts.speak(example); },
             borderRadius: BorderRadius.circular(16),
             child: Ink(
               decoration: BoxDecoration(
@@ -143,7 +145,7 @@ class _IpaGridState extends State<IpaGrid> {
                 border: Border.all(color: scheme.outlineVariant),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

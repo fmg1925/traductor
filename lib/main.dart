@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:traductor/pages/home.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:universal_io/io.dart';
 import 'src/web_title.dart';
 import 'l10n/app_localizations.dart';
 
+bool isRebuilding = false;
+bool isNavigating = false;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter(); // Iniciar persistencia
@@ -14,6 +18,11 @@ void main() async {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     setWebTitle("Trilingo"); // Forzar título en web, default es ip:puerto
   });
+
+  if (Platform.isAndroid || Platform.isIOS) {
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
+
   runApp(MyApp());
 }
 
@@ -24,13 +33,17 @@ class MyApp extends StatelessWidget {
 
   ThemeMode _themeModeFrom(String? v) {
     switch ((v ?? 'system').toLowerCase()) {
-      case 'light': return ThemeMode.light;
-      case 'dark':  return ThemeMode.dark;
-      default:      return ThemeMode.system;
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      default:
+        return ThemeMode.system;
     }
   }
 
-  Locale _parseLocaleTag(String tag) { // Convertir idiomas xx-XX a xx
+  Locale _parseLocaleTag(String tag) {
+    // Convertir idiomas xx-XX a xx
     final parts = tag.split(RegExp(r'[-_]'));
     if (parts.length == 1) return Locale(parts[0]);
     if (parts.length == 2) return Locale(parts[0], parts[1]);
@@ -47,6 +60,12 @@ class MyApp extends StatelessWidget {
     return ValueListenableBuilder<Box<String>>(
       valueListenable: box.listenable(keys: const ['locale', 'themeMode']),
       builder: (_, b, _) {
+        isRebuilding = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            isRebuilding = false;
+          });
+        });
         final tag = b.get('locale', defaultValue: 'en')!;
         final loc = _parseLocaleTag(tag);
         final mode = b.get('themeMode', defaultValue: 'system');
@@ -76,20 +95,23 @@ class MyApp extends StatelessWidget {
   }
 }
 
-TextStyle ipaStyle(BuildContext context) => GoogleFonts.notoSans( // Estilo para alfabeto fonético
+TextStyle ipaStyle(BuildContext context) => GoogleFonts.notoSans(
+  // Estilo para alfabeto fonético
   fontSize: 13,
   height: 1.15,
   color: Theme.of(context).colorScheme.onSecondary,
   textStyle: const TextStyle(overflow: TextOverflow.visible),
 );
 
-TextStyle wordStyle(BuildContext context) => TextStyle( // Estilo para letras en general
+TextStyle wordStyle(BuildContext context) => TextStyle(
+  // Estilo para letras en general
   fontSize: 16,
   height: 1.15,
   color: Theme.of(context).colorScheme.onSurface,
 );
 
-extension L10nX on BuildContext { // Para recargar idioma en ejecución
+extension L10nX on BuildContext {
+  // Para recargar idioma en ejecución
   AppLocalizations get l10n => AppLocalizations.of(this);
 }
 
@@ -110,7 +132,8 @@ Map<String, String> locales(BuildContext ctx) => {
   'ko': ctx.l10n.ko,
 };
 
-String ttsLocaleFor(String code) { // Convertir locales a compatibles con TTS
+String ttsLocaleFor(String code) {
+  // Convertir locales a compatibles con TTS
   switch (code) {
     case 'es':
       return 'es-ES';
@@ -139,23 +162,8 @@ const _darkPinkContainer = Color.fromARGB(166, 163, 11, 64);
 
 ThemeData appTheme(Brightness brightness) {
   final base = ColorScheme.fromSeed(seedColor: _seed, brightness: brightness);
-  final scheme = (brightness == Brightness.dark)
+  final scheme = (brightness == Brightness.light)
       ? base.copyWith(
-          primary: Color.fromARGB(100, 0, 0, 0),
-          onPrimary: Colors.white,
-          secondary: _darkPink,
-          onSecondary: Colors.white,
-          primaryContainer: _darkPinkContainer,
-          onPrimaryContainer: const Color.fromARGB(255, 217, 255, 246),
-          secondaryContainer: const Color.fromARGB(145, 233, 30, 128),
-          tertiary: const Color.from(alpha: 0, red: 0, green: 0, blue: 0),
-          tertiaryContainer: const Color.fromARGB(0, 0, 0, 0),
-          tertiaryFixed: Colors.white,
-          onTertiary: Color(0xFF191113),
-          onTertiaryFixed: Colors.white,
-          onTertiaryFixedVariant: const Color.fromARGB(145, 233, 30, 128),
-        )
-      : base.copyWith(
           primary: const Color.fromARGB(255, 255, 255, 255),
           onPrimary: Colors.black,
           secondary: _darkPink,
@@ -163,6 +171,7 @@ ThemeData appTheme(Brightness brightness) {
           primaryContainer: const Color.fromARGB(207, 255, 255, 255),
           onPrimaryContainer: const Color(0xFF5A0018),
           secondaryContainer: const Color.fromARGB(255, 255, 255, 255),
+          surfaceContainerLowest: const Color.fromARGB(255, 233, 30, 128),
           surface: _seed,
           tertiary: const Color.fromARGB(20, 0, 0, 0),
           tertiaryContainer: Colors.white,
@@ -170,6 +179,26 @@ ThemeData appTheme(Brightness brightness) {
           onTertiary: Color(0xFFFF007F),
           onTertiaryFixed: Color(0xFFFF007F),
           onTertiaryFixedVariant: Colors.white,
+          onTertiaryContainer: Colors.black26,
+          onInverseSurface: Colors.white,
+        )
+      : base.copyWith(
+          primary: Color.fromARGB(100, 0, 0, 0),
+          onPrimary: Colors.white,
+          secondary: _darkPink,
+          onSecondary: Colors.white,
+          primaryContainer: _darkPinkContainer,
+          onPrimaryContainer: const Color.fromARGB(255, 217, 255, 246),
+          secondaryContainer: const Color.fromARGB(145, 233, 30, 128),
+          surfaceContainerLowest: const Color.fromARGB(145, 233, 30, 128),
+          tertiary: const Color.from(alpha: 0, red: 0, green: 0, blue: 0),
+          tertiaryContainer: const Color.fromARGB(0, 0, 0, 0),
+          tertiaryFixed: Colors.white,
+          onTertiary: Color(0xFF191113),
+          onTertiaryFixed: Colors.white,
+          onTertiaryFixedVariant: const Color.fromARGB(145, 233, 30, 128),
+          onTertiaryContainer: const Color.fromARGB(103, 233, 30, 128),
+          onInverseSurface: Colors.black,
         );
 
   return ThemeData(
@@ -195,5 +224,3 @@ ThemeData appTheme(Brightness brightness) {
     ),
   );
 }
-
-

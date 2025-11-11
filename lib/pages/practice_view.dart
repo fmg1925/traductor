@@ -5,9 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:traductor/entities/translation.dart';
+import 'package:traductor/helpers/force_web_speech_lang.dart';
 import 'package:traductor/helpers/popup.dart';
 import 'package:traductor/main.dart';
-import 'package:traductor/pages/home.dart' show tts, tipoGeneracion;
+import 'package:traductor/pages/home.dart' show tts;
 import 'package:traductor/partials/tap_word_text.dart';
 import 'package:traductor/partials/tile_rich.dart';
 import '../domain/providers/data_provider.dart';
@@ -61,6 +62,7 @@ class _PracticeViewState extends State<PracticeView> {
       return;
     }
     try {
+      if (kIsWeb) forceWebSpeechLang(ttsLocaleFor(targetLang));
       await widget.speechToText.listen(
         onResult: _onSpeechResult,
         listenOptions: SpeechListenOptions(
@@ -163,7 +165,7 @@ class _PracticeViewState extends State<PracticeView> {
 
   void _generar() {
     setState(() {
-      translationFuture = fetchTranslation(provider, sourceLang, targetLang, tipoGeneracion);
+    translationFuture = fetchTranslation(provider, sourceLang, targetLang, 'frase');
     });
   }
 
@@ -318,7 +320,7 @@ class _PracticeViewState extends State<PracticeView> {
   }
 }
 
-class TranslationsArea extends StatelessWidget {
+class TranslationsArea extends StatefulWidget {
   final Future<Translation>? future;
   final String targetLang;
   final Future<void> Function() startListening;
@@ -341,9 +343,16 @@ class TranslationsArea extends StatelessWidget {
   });
 
   @override
+  State<TranslationsArea> createState() => _TranslationsAreaState();
+}
+
+class _TranslationsAreaState extends State<TranslationsArea> {
+  bool _errorShown = false;
+
+  @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    if (future == null) {
+    if (widget.future == null) {
       return Center(
         child: Text(
           t.generate_for_practice,
@@ -358,7 +367,7 @@ class TranslationsArea extends StatelessWidget {
 
   FutureBuilder<Translation> traducciones() {
     return FutureBuilder<Translation>(
-      future: future,
+      future: widget.future,
       builder: (context, snap) {
         final t = AppLocalizations.of(context);
         final scheme = Theme.of(context).colorScheme;
@@ -368,29 +377,23 @@ class TranslationsArea extends StatelessWidget {
           );
         }
 
-        if (snap.hasError) {
-          final t = AppLocalizations.of(context);
-          return SingleChildScrollView(
-            child: TileRich(
-              title: t.error,
-              body: const SizedBox.shrink(),
-              errorText: t.error_translation('${snap.error}'),
-              color: scheme.primary,
-              onTts: () {},
-              copyText: '${snap.error}',
-            ),
-          );
-        }
-
-        if (!snap.hasData) {
-          return Padding(
-            padding: const EdgeInsets.all(12),
-            child: TileRich(
-              title: '',
-              body: const SizedBox.shrink(),
-              copyText: '',
-            ),
-          );
+        if (snap.connectionState == ConnectionState.done && (snap.hasError || !snap.hasData)) {
+          if (!_errorShown) {
+            _errorShown = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && !isRebuilding && !isNavigating) {
+                PopUp.showPopUp(
+                  context,
+                  t.error,
+                  t.error_translation(snap.error.toString()),
+                );
+              }
+            });
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (mounted) _errorShown = false;
+            });
+          }
+          return const SizedBox.shrink();
         }
 
         final item = snap.data as Translation;
@@ -419,7 +422,7 @@ class TranslationsArea extends StatelessWidget {
       title: '${t.original} (${item.detectedLanguage})',
       body: TapWordText(
         text: item.originalText,
-        targetLang: targetLang,
+        targetLang: widget.targetLang,
         sourceLang: item.detectedLanguage,
         ipaPerWord: item.originalIpa,
         romanizationPerWord: item.originalRomanization,
@@ -517,9 +520,9 @@ class TranslationsArea extends StatelessWidget {
 
   Widget voiceDetection(BuildContext context, AppLocalizations t) {
     final scheme = Theme.of(context).colorScheme;
-    final idleText = (listeningText.isNotEmpty)
-        ? '$listeningText'
-              '${lastAccuracy == null ? '' : '\n\n${t.accuracy}: ${lastAccuracy!.toStringAsFixed(1)}%'}'
+    final idleText = (widget.listeningText.isNotEmpty)
+        ? '${widget.listeningText}'
+              '${widget.lastAccuracy == null ? '' : '\n\n${t.accuracy}: ${widget.lastAccuracy!.toStringAsFixed(1)}%'}'
         : t.start;
 
     return TileRich(
@@ -527,13 +530,13 @@ class TranslationsArea extends StatelessWidget {
       body: Center(
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: !speechEnabled
+          onTap: !widget.speechEnabled
               ? null
               : () async {
-                  if (speechListening) {
-                    await stopListening();
+                  if (widget.speechListening) {
+                    await widget.stopListening();
                   } else {
-                    await startListening();
+                    await widget.startListening();
                   }
                 },
           child: AnimatedSwitcher(
@@ -541,13 +544,13 @@ class TranslationsArea extends StatelessWidget {
             transitionBuilder: (child, anim) =>
                 FadeTransition(opacity: anim, child: child),
 
-            child: speechListening
+            child: widget.speechListening
                 ? Column(
                     key: const ValueKey('state_listening'),
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '${t.listening}\n\n$listeningText',
+                        '${t.listening}\n\n${widget.listeningText}',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: scheme.onPrimary),
                       ),

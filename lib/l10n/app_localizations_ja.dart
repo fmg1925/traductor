@@ -303,4 +303,58 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get ipaOpenOiDiphthongName => '二重母音';
+
+  @override
+  String get network_error => 'ネットワークエラーです。接続を確認してください。';
+
+  @override
+  String get timeout => 'リクエストがタイムアウトしました。';
+
+  @override
+  String get ssl_error => 'セキュア接続（SSL）に失敗しました。';
+
+  @override
+  String get canceled => 'リクエストはキャンセルされました。';
+
+  @override
+  String get bad_request => '不正なリクエストです。';
+
+  @override
+  String get unauthorized => '認証されていません。ログインしてください。';
+
+  @override
+  String get forbidden => 'アクセスが拒否されました。';
+
+  @override
+  String get not_found => 'サーバーオフライン／リソースが見つかりません。';
+
+  @override
+  String get method_not_allowed => '許可されていないメソッドです。';
+
+  @override
+  String get conflict => '競合が発生しました。';
+
+  @override
+  String get unprocessable_entity => '処理できないエンティティです。';
+
+  @override
+  String get too_many_requests => 'リクエストが多すぎます。後でもう一度お試しください。';
+
+  @override
+  String get server_error => 'サーバー内部エラーが発生しました。';
+
+  @override
+  String get bad_gateway => '不正なゲートウェイです。';
+
+  @override
+  String get service_unavailable => 'サービスを利用できません。';
+
+  @override
+  String get gateway_timeout => 'ゲートウェイのタイムアウトです。';
+
+  @override
+  String get unknown_error => '予期しないエラーです。';
+
+  @override
+  String get no_text_in_ocr => 'OCRで文字を検出できませんでした。';
 }

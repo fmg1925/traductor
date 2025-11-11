@@ -10,7 +10,7 @@ class Tts {
   final bool isWindowsDesktop = Platform.isWindows && !kIsWeb;
 
   Future<void> init({
-    String lang = 'es-ES',
+    String lang = 'en-US',
     void Function(bool)? onStateChanged,
   }) async {
     await _tts.setLanguage(lang);

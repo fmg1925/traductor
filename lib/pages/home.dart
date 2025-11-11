@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:traductor/helpers/error_parser.dart';
+import 'package:traductor/helpers/force_web_speech_lang.dart' show forceWebSpeechLang;
 import 'package:traductor/helpers/tts.dart';
 import 'package:traductor/main.dart';
 import 'package:traductor/pages/diccionario_view.dart';
@@ -20,6 +22,7 @@ import 'package:universal_io/io.dart' show Platform;
 
 final tts = Tts();
 String tipoGeneracion = "frase";
+bool _ocrResult = false;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,6 +38,11 @@ class _HomePageState extends State<HomePage> {
   String sourceLang = 'auto';
   String targetLang = 'es';
   Future<Translation>? translationFuture;
+
+  late String lastTranslation;
+  late String lastSourceLang;
+  late String lastTargetLang;
+  bool retranslateReady = false;
 
   int index = 0;
 
@@ -115,6 +123,7 @@ class _HomePageState extends State<HomePage> {
     if (_speechToText.isListening || _speechListening) return;
     try {
       _speechListening = true;
+      if (kIsWeb) forceWebSpeechLang(ttsLocaleFor(targetLang));
       await _speechToText.listen(
         onResult: _onSpeechResult,
         listenOptions: SpeechListenOptions(
@@ -177,22 +186,40 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _generar() {
+  final text = _controller.text.trim();
+  final future = text.isNotEmpty
+      ? fetchTranslationFor(provider, text, sourceLang, targetLang)
+      : fetchTranslation(provider, sourceLang, targetLang, tipoGeneracion);
+
+  setState(() {
+    translationFuture = future;    // Future<Translation>
+    retranslateReady = false;      // no listo hasta completar
+    lastSourceLang = sourceLang;
+    lastTargetLang = targetLang;
+  });
+
+  future.then((res) {
+    if (!mounted) return;
     setState(() {
-      if (_controller.text.isNotEmpty) {
-        translationFuture = fetchTranslationFor(
-          provider,
-          _controller.text,
-          sourceLang,
-          targetLang,
-        );
-      } else {
-        translationFuture = fetchTranslation(
-          provider,
-          sourceLang,
-          targetLang,
-          tipoGeneracion,
-        );
-      }
+      lastTranslation = res.originalText;
+      lastSourceLang = res.detectedLanguage;
+      lastTargetLang = res.target;
+      retranslateReady = true;
+    });
+  }).catchError((_) {
+    if (!mounted) return;
+    setState(() => retranslateReady = false);
+  });
+}
+
+  void _retraducir() {
+    setState(() {
+      translationFuture = retranslate(
+        provider,
+        lastTranslation,
+        lastSourceLang,
+        lastTargetLang,
+      );
     });
   }
 
@@ -208,6 +235,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _ocr() async {
+    _ocrResult = true;
     final x = await pickPhotoUniversal();
     if (x == null) return;
 
@@ -266,7 +294,13 @@ class _HomePageState extends State<HomePage> {
         'Trilingo',
         style: theme.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.bold,
-          color: theme.colorScheme.onSurface,
+          color: Colors.white,
+          shadows: [
+            Shadow(offset: Offset(-1, -1), color: Colors.black),
+            Shadow(offset: Offset( 1, -1), color: Colors.black),
+            Shadow(offset: Offset( 1,  1), color: Colors.black),
+            Shadow(offset: Offset(-1,  1), color: Colors.black),
+          ],
         ),
       ),
       backgroundColor: theme.colorScheme.tertiary,
@@ -394,6 +428,16 @@ class _HomePageState extends State<HomePage> {
           filled: true,
           fillColor: scheme.tertiaryContainer,
           hintText: t.main_hint,
+          counterStyle: TextStyle(
+          color: scheme.tertiaryFixed, // color principal del texto
+          fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(offset: Offset(-0.25, -0.5), color: Colors.black),
+            Shadow(offset: Offset( 0.25, -0.5), color: Colors.black),
+            Shadow(offset: Offset( 0.25,  0.5), color: Colors.black),
+            Shadow(offset: Offset(-0.25,  0.5), color: Colors.black),
+          ],
+        ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
@@ -414,7 +458,9 @@ class _HomePageState extends State<HomePage> {
                     if (_speechListening) {
                       await _stopListening();
                     } else {
-                      if (!await _isSpeechToTextLanguageInstalled(ttsLocaleFor(sourceLang))) {
+                      if (!await _isSpeechToTextLanguageInstalled(
+                        ttsLocaleFor(sourceLang),
+                      )) {
                         if (!mounted) return;
                         final langs = languages(context);
                         final langName = langs[sourceLang];
@@ -534,58 +580,14 @@ class _HomePageState extends State<HomePage> {
 
   Padding generarButton() {
     final t = AppLocalizations.of(context);
-    final isEmpty = _controller.text.trim().isEmpty;
-    final theme = Theme.of(context);
     final scheme = Theme.of(context).colorScheme;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FilledButton.icon(
-                onPressed: _generar,
-                icon: const Icon(Icons.play_arrow),
-                label: Text(isEmpty ? t.generate_translation : t.translate),
-                style: ButtonStyle(
-                  backgroundColor: WidgetStatePropertyAll(
-                    scheme.secondaryContainer,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Material(
-                color: scheme.onTertiaryFixedVariant,
-                borderRadius: BorderRadius.circular(8.0),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
-                  child: DropdownButton<String>(
-                    isDense: true,
-                    value: tipoGeneracion,
-                    onChanged: (v) => setState(() => tipoGeneracion = v!),
-                    dropdownColor: scheme.primary,
-                    iconEnabledColor: scheme.onSurfaceVariant,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: scheme.onPrimary,
-                    ),
-                    items: [
-                      DropdownMenuItem(value: 'frase', child: Text(t.frase)),
-                      DropdownMenuItem(value: 'sujeto', child: Text(t.sujeto)),
-                      DropdownMenuItem(value: 'verbo', child: Text(t.verbo)),
-                      DropdownMenuItem(value: 'color', child: Text(t.color)),
-                      DropdownMenuItem(value: 'familia', child: Text(t.familia)),
-                      DropdownMenuItem(value: 'adjetivo', child: Text(t.adjetivo)),
-                      DropdownMenuItem(value: 'direccion', child: Text(t.direccion)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          FilledButton.icon(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 420;
+
+          final ocrBtn = FilledButton.icon(
             onPressed: _ocr,
             icon: const Icon(Icons.document_scanner),
             label: const Text('OCR'),
@@ -594,8 +596,149 @@ class _HomePageState extends State<HomePage> {
                 scheme.secondaryContainer,
               ),
             ),
-          ),
-        ],
+          );
+
+          if (!isNarrow) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            FilledButton.icon(
+                              onPressed: _generar,
+                              icon: const Icon(Icons.play_arrow),
+                              label: Text(
+                                _controller.text.isEmpty
+                                    ? t.generate_translation
+                                    : t.translate,
+                              ),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: scheme.secondaryContainer,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(14),
+                                    bottomLeft: Radius.circular(14),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              enabled: retranslateReady,
+                              onSelected: (v) { if (v == 'retranslate') _retraducir(); },
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'retranslate',
+                                  child: ListTile(
+                                    dense: true,
+                                    leading: const Icon(Icons.autorenew),
+                                    title: Text(
+                                      t.retraducir,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              child: FilledButton(
+                                onPressed: null,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: scheme.secondaryContainer,
+                                  foregroundColor: scheme.onSecondaryContainer,
+                                  disabledBackgroundColor: retranslateReady ? scheme.secondaryContainer : scheme.onTertiaryContainer,
+                                  disabledForegroundColor: scheme.onSecondaryContainer,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  minimumSize: const Size(40, 40),
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.only(
+                                      topRight: Radius.circular(14), bottomRight: Radius.circular(14),
+                                    ),
+                                  ),
+                                ),
+                                child: Icon(Icons.arrow_drop_down, color: retranslateReady ? scheme.onPrimary : scheme.onInverseSurface),
+                            ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(width: 8),
+                        tipoFraseDropdown(scheme, Theme.of(context), t),
+                      ],
+                    ),
+                  ],
+                ),
+                ocrBtn,
+              ],
+            );
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: _generar,
+                      icon: const Icon(Icons.play_arrow),
+                      label: Text(
+                        _controller.text.isEmpty
+                            ? t.generate_translation
+                            : t.translate,
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(
+                          scheme.secondaryContainer,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  tipoFraseDropdown(scheme, Theme.of(context), t),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Align(alignment: Alignment.centerRight, child: ocrBtn),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Material tipoFraseDropdown(
+    ColorScheme scheme,
+    ThemeData theme,
+    AppLocalizations t,
+  ) {
+    return Material(
+      color: scheme.onTertiaryFixedVariant,
+      borderRadius: BorderRadius.circular(8.0),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
+        child: DropdownButton<String>(
+          isDense: true,
+          value: tipoGeneracion,
+          onChanged: (v) => setState(() => tipoGeneracion = v!),
+          dropdownColor: scheme.primary,
+          iconEnabledColor: scheme.onSurfaceVariant,
+          style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onPrimary),
+          items: [
+            DropdownMenuItem(value: 'frase', child: Text(t.frase)),
+            DropdownMenuItem(value: 'sujeto', child: Text(t.sujeto)),
+            DropdownMenuItem(value: 'verbo', child: Text(t.verbo)),
+            DropdownMenuItem(value: 'color', child: Text(t.color)),
+            DropdownMenuItem(value: 'familia', child: Text(t.familia)),
+            DropdownMenuItem(value: 'adjetivo', child: Text(t.adjetivo)),
+            DropdownMenuItem(value: 'direccion', child: Text(t.direccion)),
+          ],
+        ),
       ),
     );
   }
@@ -608,7 +751,13 @@ class _HomePageState extends State<HomePage> {
       selectedIndex: index,
       indicatorColor: scheme.onTertiary,
       onDestinationSelected: (i) {
+        isNavigating = true;
         setState(() => index = i);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            isNavigating = false;
+          });
+        });
       },
       destinations: [
         NavigationDestination(
@@ -636,7 +785,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class TranslationsArea extends StatelessWidget {
+class TranslationsArea extends StatefulWidget {
   final Future<Translation>? future;
   final String targetLang;
   const TranslationsArea({
@@ -646,9 +795,16 @@ class TranslationsArea extends StatelessWidget {
   });
 
   @override
+  State<TranslationsArea> createState() => _TranslationsAreaState();
+}
+
+class _TranslationsAreaState extends State<TranslationsArea> {
+  bool _errorShown = false;
+
+  @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    if (future == null) {
+    if (widget.future == null) {
       return Center(
         child: Text(
           t.main_hint,
@@ -663,7 +819,7 @@ class TranslationsArea extends StatelessWidget {
 
   FutureBuilder<Translation> traducciones() {
     return FutureBuilder<Translation>(
-      future: future,
+      future: widget.future,
       builder: (context, snap) {
         final t = AppLocalizations.of(context);
         final scheme = Theme.of(context).colorScheme;
@@ -672,28 +828,41 @@ class TranslationsArea extends StatelessWidget {
             child: CircularProgressIndicator(color: scheme.onPrimary),
           );
         }
-        if (snap.hasError) {
-          final t = AppLocalizations.of(context);
-          return SingleChildScrollView(
-            child: TileRich(
-              title: t.error,
-              body: const SizedBox.shrink(),
-              errorText: t.error_translation('${snap.error}'),
-              color: scheme.primary,
-              onTts: () {},
-              copyText: snap.error.toString(),
-            ),
-          );
+
+        if (snap.hasData) {
+          if (snap.connectionState == ConnectionState.done &&
+              snap.data!.originalText.trim().isEmpty &&
+              _ocrResult) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _ocrResult = false;
+              PopUp.showPopUp(context, t.error, t.no_text_in_ocr);
+            });
+            return const SizedBox.shrink();
+          }
         }
-        if (!snap.hasData) {
-          return TileRich(
-            title: t.error,
-            body: const SizedBox.shrink(),
-            color: scheme.error,
-            onTts: () {},
-            copyText: '',
-          );
+
+        if (snap.connectionState == ConnectionState.done &&
+            (snap.hasError || !snap.hasData)) {
+          if (!_errorShown) {
+            _errorShown = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && !isRebuilding && !isNavigating) {
+                PopUp.showPopUp(
+                  context,
+                  t.error,
+                  t.error_translation(
+                    ErrorParser.parseError(snap.error.toString(), context),
+                  ),
+                );
+              }
+            });
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (mounted) _errorShown = false;
+            });
+          }
+          return const SizedBox.shrink();
         }
+
         final item = snap.data!;
         return ListView(
           padding: const EdgeInsets.all(12),
@@ -702,7 +871,7 @@ class TranslationsArea extends StatelessWidget {
               title: '${t.original} (${item.detectedLanguage})',
               body: TapWordText(
                 text: item.originalText,
-                targetLang: targetLang,
+                targetLang: widget.targetLang,
                 sourceLang: item.detectedLanguage,
                 ipaPerWord: item.originalIpa,
                 romanizationPerWord: item.originalRomanization,
@@ -787,7 +956,7 @@ class TranslationsArea extends StatelessWidget {
                       await tts.changeLanguage(ttsLocaleFor(item.target));
                       await tts.speak(item.translatedText);
                     },
-                    item.originalText,
+                    item.translatedText,
                     context,
                   ),
                   copyText: item.translatedText,

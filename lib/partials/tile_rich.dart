@@ -38,7 +38,7 @@ class TileRich extends StatelessWidget {
 
   final Widget Function(Widget child)? wrapper;
 
-  static const double _railW = 48.0;
+  static const double _railW = 52.0;
   static const double _gap = 12.0;
 
   @override
@@ -117,42 +117,64 @@ class TileRich extends StatelessWidget {
         border: Border.all(color: theme.dividerColor),
       ),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (context, c) {
+          final left = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  height: 1.05,
+                  color: theme.colorScheme.onPrimary,
+                ),
+                textHeightBehavior: const TextHeightBehavior(
+                  applyHeightToFirstAscent: true,
+                  applyHeightToLastDescent: false,
+                ),
+              ),
+              const SizedBox(height: _gap),
+              body,
+              if (errorText != null) ...[
+                const SizedBox(height: _gap),
+                Text(errorText!, style: const TextStyle(color: Colors.red)),
+              ],
+            ],
+          );
+
+          if (!hasRail) return left;
+
+          final narrow = c.maxWidth < 360;
+
+          if (!narrow) {
+            return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 4),
-                Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    height: 1.05,
-                    color: theme.colorScheme.onPrimary,
-                  ),
-                  textHeightBehavior: const TextHeightBehavior(
-                    applyHeightToFirstAscent: true,
-                    applyHeightToLastDescent: false,
-                  ),
-                ),
-                const SizedBox(height: _gap),
-                body,
-                if (errorText != null) ...[
-                  const SizedBox(height: _gap),
-                  Text(errorText!, style: const TextStyle(color: Colors.red)),
-                ],
+                Expanded(child: left),
+                const SizedBox(width: _gap),
+                SizedBox(width: _railW, child: rail),
               ],
-            ),
-          ),
+            );
+          }
 
-          if (hasRail) ...[
-            const SizedBox(width: _gap),
-            SizedBox(width: _railW, child: rail),
-          ],
-        ],
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              left,
+              const SizedBox(height: _gap),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints.tightFor(width: _railW),
+                  child: rail,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
 
@@ -178,11 +200,15 @@ Widget rightButtons(
             builder: (context, isListening, _) {
               return IconButton.filledTonal(
                 icon: Icon(isListening ? Icons.stop : Icons.volume_up),
+                style: IconButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1.2)),
                 tooltip: isListening ? t.stop : t.listen,
                 onPressed: onTts,
                 iconSize: 20,
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(width: 50, height: 50),
+                constraints: const BoxConstraints.tightFor(
+                  width: 48,
+                  height: 48,
+                ),
                 visualDensity: VisualDensity.compact,
               );
             },
@@ -191,6 +217,7 @@ Widget rightButtons(
           IconButton.filledTonal(
             icon: const Icon(Icons.copy_all),
             tooltip: t.copy,
+            style: IconButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1.2)),
             onPressed: () {
               Clipboard.setData(ClipboardData(text: copyText));
               ScaffoldMessenger.of(context)
@@ -199,7 +226,7 @@ Widget rightButtons(
             },
             iconSize: 20,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: 50, height: 50),
+            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
             visualDensity: VisualDensity.compact,
           ),
         ],

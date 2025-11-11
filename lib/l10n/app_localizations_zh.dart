@@ -303,4 +303,58 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ipaOpenOiDiphthongName => '双元音';
+
+  @override
+  String get network_error => '网络错误。请检查您的连接。';
+
+  @override
+  String get timeout => '请求超时。';
+
+  @override
+  String get ssl_error => '安全连接（SSL）失败。';
+
+  @override
+  String get canceled => '请求已取消。';
+
+  @override
+  String get bad_request => '错误的请求。';
+
+  @override
+  String get unauthorized => '未授权。请先登录。';
+
+  @override
+  String get forbidden => '拒绝访问。';
+
+  @override
+  String get not_found => '服务器离线 / 未找到资源。';
+
+  @override
+  String get method_not_allowed => '不允许的请求方法。';
+
+  @override
+  String get conflict => '发生冲突。';
+
+  @override
+  String get unprocessable_entity => '无法处理的实体。';
+
+  @override
+  String get too_many_requests => '请求过多。请稍后重试。';
+
+  @override
+  String get server_error => '服务器内部错误。';
+
+  @override
+  String get bad_gateway => '网关错误。';
+
+  @override
+  String get service_unavailable => '服务不可用。';
+
+  @override
+  String get gateway_timeout => '网关超时。';
+
+  @override
+  String get unknown_error => '未知错误。';
+
+  @override
+  String get no_text_in_ocr => 'OCR 未检测到文本。';
 }

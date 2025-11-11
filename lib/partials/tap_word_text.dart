@@ -178,8 +178,9 @@ for (int i = 0; i < tokens.length; i++) {
     );
 
     wordBlocks.add(
-      IntrinsicWidth(
-        child: Align(
+        Align(
+          widthFactor: 1,
+          heightFactor: 1,
           alignment: Alignment.topLeft,
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
@@ -208,13 +209,12 @@ for (int i = 0; i < tokens.length; i++) {
             ),
           ),
         ),
-      ),
     );
   } else {
     if (tk.trim().isEmpty) {
       wordBlocks.add(const SizedBox(width: 6));
     } else {
-      wordBlocks.add(Text(tk, style: wordStyle));
+      wordBlocks.add(Text(tk, style: wordStyle, textAlign: TextAlign.start, softWrap: true, overflow: TextOverflow.clip, textWidthBasis: TextWidthBasis.parent,));
     }
   }
 }

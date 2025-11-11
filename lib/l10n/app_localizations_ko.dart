@@ -303,4 +303,58 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get ipaOpenOiDiphthongName => '이중모음';
+
+  @override
+  String get network_error => '네트워크 오류입니다. 연결을 확인하세요.';
+
+  @override
+  String get timeout => '요청 시간이 초과되었습니다.';
+
+  @override
+  String get ssl_error => '보안 연결(SSL)에 실패했습니다.';
+
+  @override
+  String get canceled => '요청이 취소되었습니다.';
+
+  @override
+  String get bad_request => '잘못된 요청입니다.';
+
+  @override
+  String get unauthorized => '인증되지 않았습니다. 로그인해 주세요.';
+
+  @override
+  String get forbidden => '접근이 거부되었습니다.';
+
+  @override
+  String get not_found => '서버 오프라인 / 리소스를 찾을 수 없음.';
+
+  @override
+  String get method_not_allowed => '허용되지 않은 메서드입니다.';
+
+  @override
+  String get conflict => '충돌이 발생했습니다.';
+
+  @override
+  String get unprocessable_entity => '처리할 수 없는 엔티티입니다.';
+
+  @override
+  String get too_many_requests => '요청이 너무 많습니다. 나중에 다시 시도하세요.';
+
+  @override
+  String get server_error => '서버 내부 오류입니다.';
+
+  @override
+  String get bad_gateway => '게이트웨이 오류입니다.';
+
+  @override
+  String get service_unavailable => '서비스를 사용할 수 없습니다.';
+
+  @override
+  String get gateway_timeout => '게이트웨이 시간 초과입니다.';
+
+  @override
+  String get unknown_error => '예기치 못한 오류입니다.';
+
+  @override
+  String get no_text_in_ocr => 'OCR에서 텍스트를 감지하지 못했습니다.';
 }

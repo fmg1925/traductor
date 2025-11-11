@@ -1,4 +1,4 @@
-import random, re
+import random
 
 _SAFE_SUBJECTS = [
     "Liam",
@@ -152,7 +152,6 @@ _SAFE_SUBJECTS = [
     "The rabbits",
     "The horses",
     "The cows",
-    "The sheep",
     "The ducks",
     "The turtles",
     "The foxes",
@@ -221,58 +220,34 @@ _COMPAT = {
     "drive":     ["vehicle"],
 }
 
-_FIXES = {
-    "a rest":"a rest",
-    "a break":"a break",
-    "a shower":"a shower",
-    "a note":"a note",
-    "a game":"a game",
-    "help":"help",
-    "my family":"my family",
-    "English":"English",
-    "math":"math",
-    "science":"science",
-    "": "",
-}
+VERBS = ["eat","drink","cook","make","have","get","buy","bring","open","close",
+             "use","read","watch","play","listen to","write","send","call","help",
+             "meet","visit","clean","find","need","like","love","go to","come to",
+             "walk to","study","work","sleep","drive"]
 
 def _choose_object_for(verb, rng):
-    pools = _COMPAT.get(verb, ["thing"])
+    pools = _COMPAT.get(verb, ["thing_use"])
     choice = rng.choice(pools)
-    if choice in _FIXES:
-        return _FIXES[choice]
-    lst = _OBJ.get(choice, [])
-    return rng.choice(lst) if lst else ""
+    lst = _OBJ.get(choice)
+    return rng.choice(lst) if lst else choice
 
 def _cap(s): 
     return s[:1].upper() + s[1:] if s else s
 
 def generate_sentence_beginner(seed=None):
     rng = random.Random(seed)
-    verbs = ["eat","drink","cook","make","have","get","buy","bring","open","close",
-             "use","read","watch","play","listen to","write","send","call","help",
-             "meet","visit","clean","find","need","like","love","go to","come to",
-             "walk to","study","work","sleep","drive"]
 
     subj = rng.choice(_SAFE_SUBJECTS)
-    vb   = rng.choice(verbs)
+    vb   = rng.choice(VERBS)
     adv  = rng.choice(_SAFE_ADVERBS)
     obj = _choose_object_for(vb, rng)
-    if obj:
-        vp = f"can {vb} {obj}".strip()
-    else:
-        vp = f"can {vb}".strip()
+    
+    vp = f"can {vb}" + (f" {obj}" if obj else "")
     if adv:
-        if adv in {"today","now"}:
-            vp = f"{vp} {adv}"
-        else:
-            if " can " in f" {vp} ":
-                vp = vp.replace("can ", f"can {adv} ", 1)
-            else:
-                vp = f"{vp} {adv}"
-    vp = re.sub(r"\s+", " ", vp).strip()
+        vp = (f"{vp} {adv}") if adv in {"today","now"} else vp.replace("can ", f"can {adv} ", 1)
+
     vp = vp.replace(" to the home", " home").replace(" to home", " home")
-    sent = f"{_cap(subj)} {vp}."
-    return sent
+    return f"{_cap(subj)} {vp}."
 
 SUJETOS = [
     "Father",
@@ -417,7 +392,6 @@ ADJETIVOS = [
     "New",
     "Good",
     "Bad",
-    "Happy",
     "Sad",
     "Beautiful",
     "Ugly",
@@ -576,8 +550,6 @@ def conseguirPalabraRandom(categoria: str) -> str:
         case "adjetivo":
             return random.choice(ADJETIVOS)
         case "direccion":
-            return "Where is " + random.choice(LUGARES) + "?"
+            return f"Where is {random.choice(LUGARES)}?"
         case _:
             return ""
-    
-    

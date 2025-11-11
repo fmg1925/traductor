@@ -12,9 +12,11 @@ import hashlib, requests, os, sys, io, base64, numpy as np
 from PIL import Image, ImageOps
 from paddleocr import PaddleOCR
 from ipa import pronounce, space_chinese_for_flutter, space_japanese_for_flutter
-from langdetect import DetectorFactory, detect
-import orjson
-import threading
+from langdetect import DetectorFactory, detect_langs
+import orjson, threading, unicodedata, re
+
+_WS = re.compile(r"\s+")
+_PUNCT = ".,;:!?…'\"()[]{}"
 
 DetectorFactory.seed = 0
 
@@ -27,32 +29,29 @@ load_dotenv()
 
 if sys.platform == "win32":
     URI = "http://localhost:5050".rstrip("/")
-else:
-    URI = "http://0.0.0.0:5050".rstrip("/")
-    
-REQUEST_TIMEOUT = float(os.getenv("LT_TIMEOUT", "20"))
-MAX_WORKERS = int(os.getenv("LT_MAX_WORKERS", "8"))
-MAX_SENTENCE_LENGTH = 50
-
-ocrInstance = PaddleOCR()
-
-PRON_POOL = ThreadPoolExecutor(max_workers=os.cpu_count() or 8 * 2)
-_inflight = {}
-_inflight_lock = threading.Lock()
-
-if sys.platform == "win32":
     ESPEAK_DIR = os.getenv("PHONEMIZER_ESPEAK_DIR", r"C:\Program Files\eSpeak NG")
     ESPEAK_DLL = os.path.join(ESPEAK_DIR, "libespeak-ng.dll")
     os.environ.setdefault("PHONEMIZER_ESPEAK_LIBRARY", ESPEAK_DLL)
 else:
+    URI = "http://0.0.0.0:5050".rstrip("/")
     os.environ.setdefault("PHONEMIZER_ESPEAK_LIBRARY", "/usr/lib/x86_64-linux-gnu/libespeak-ng.so.1")
+    
+REQUEST_TIMEOUT = 60
+MAX_WORKERS = 4
+MAX_SENTENCE_LENGTH = 50
+
+ocrInstance = PaddleOCR()
+
+PRON_POOL = ThreadPoolExecutor(max_workers=min(32, (os.cpu_count() or 8) * 2))
+_inflight = {}
+_inflight_lock = threading.Lock()
 
 def make_session() -> requests.Session:
     sess = requests.Session()
     retries = Retry(
-        total = 3,
-        connect = 3,
-        read = 3,
+        total = 1,
+        connect = 1,
+        read = 1,
         backoff_factor= 0.5,
         status_forcelist=(429, 500, 502, 503, 504),
         allowed_methods=frozenset(["POST", "GET"])
@@ -72,6 +71,34 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024 # 25 MB máximo en fotos
 cache = Cache('./.cache')
 
+_HANGUL_START, _HANGUL_END = 0xAC00, 0xD7A3
+_HAN_RANGES = [(0x4E00, 0x9FFF), (0x3400, 0x4DBF)]
+
+def _has_han(s: str) -> bool:
+    o = map(ord, s)
+    return any(a <= x <= b for x in o for (a, b) in _HAN_RANGES)
+
+def _has_hangul(s: str) -> bool:
+    return any(_HANGUL_START <= ord(c) <= _HANGUL_END for c in s)
+
+def detect_lang_safe(text: str, *, p_gap: float = 0.20) -> str:
+    t = ''.join(text.split())
+    if not t:
+        return 'en'
+    probs = detect_langs(t)
+    top = max(probs, key=lambda p: p.prob)
+    if len(probs) > 1:
+        second = sorted(probs, key=lambda p: p.prob, reverse=True)[1]
+        if (top.prob - second.prob) < p_gap:
+            return 'en'
+
+    lang = top.lang
+
+    if lang == 'ko' and not _has_hangul(t) and _has_han(t):
+        return 'zh'
+
+    return lang
+
 def _get_pron(cache, key: str, text: str, lang: str) -> Tuple[list[str], list[str]]:
     po: Optional[object] = cache.get(key)
 
@@ -79,7 +106,7 @@ def _get_pron(cache, key: str, text: str, lang: str) -> Tuple[list[str], list[st
     roman: Optional[list[str]] = None
 
     if isinstance(po, dict):
-        v1 = po.get('ipa'); v2 = po.get('roman')
+        v1 = po.get('ipa'); v2 = po.get('roman') # type: ignore
         if isinstance(v1, list) and (not v1 or isinstance(v1[0], str)) \
            and isinstance(v2, list) and (not v2 or isinstance(v2[0], str)):
             ipa, roman = v1, v2
@@ -104,6 +131,12 @@ def _upd_list(h, seq: Optional[List[str]]) -> None:
     for item in seq:
         _upd_str(h, item)
 
+def _norm_text(s: str) -> str:
+    s = unicodedata.normalize("NFKC", (s or "").strip())
+    s = s.strip(_PUNCT).lower()
+    s = _WS.sub(" ", s)            # colapsa espacios repetidos
+    return s
+
 def cache_key(
     text: str, source: str, target: str,
     originalIpa: Optional[List[str]] = None,
@@ -111,17 +144,84 @@ def cache_key(
     originalRomanization: Optional[List[str]] = None,
     translatedRomanization: Optional[List[str]] = None,
 ) -> str:
+    s_norm = (source or "").strip().lower()
+    t_norm = (target or "").strip().lower()
+    txt    = _norm_text(text)
+
     h = hashlib.blake2b(digest_size=16)
-    _upd_str(h, source); _upd_str(h, target); _upd_str(h, text)
+    _upd_str(h, s_norm); _upd_str(h, t_norm); _upd_str(h, txt)
     _upd_list(h, originalIpa); _upd_list(h, translatedIpa)
     _upd_list(h, originalRomanization); _upd_list(h, translatedRomanization)
     return "th:" + h.hexdigest()
 
 def lt_translate(q: str, source: str, target: str) -> dict:
-    payload = {"q": q, "source": source.strip().lower(), "target": target.strip().lower(), "format": "text"}
-    r = session.post(f"{URI}/translate", json=payload, timeout=(3.0, REQUEST_TIMEOUT))
-    r.raise_for_status()
-    return r.json()
+    DEBUG = False
+    NEG_TTL = 5
+
+    src = (source or "").strip().lower()
+    tgt = (target or "").strip().lower()
+    
+    text = (q or "").strip()
+    if DEBUG: print(f"[lt_translate] src={src} tgt={tgt} text='{text[:80]}' len={len(text)}")
+    k_main = cache_key(text, src, tgt); k_neg = "MISS:"+k_main
+
+    v0 = cache.get(k_main)
+    if isinstance(v0, dict) and v0.get("translatedText"):
+        if DEBUG: print("[coalesce] HIT directo en caché")
+        return v0
+    if cache.get(k_neg):
+        if DEBUG: print("[coalesce] NEG-HIT (saltando motor)")
+        raise RuntimeError("negative-cache: recent failure")
+
+    with _inflight_lock:
+        ev = _inflight.get(k_main)
+        if ev is None:
+            ev = threading.Event(); _inflight[k_main] = ev; leader = True
+            if DEBUG: print("[coalesce] soy LEADER")
+        else:
+            leader = False 
+            if DEBUG: print("[coalesce] soy FOLLOWER, esperando")
+    if not leader:
+        ev.wait(timeout=NEG_TTL)
+        v1 = cache.get(k_main)
+        if isinstance(v1, dict) and v1.get("translatedText"):
+            if DEBUG: print("[coalesce] follower recibió del caché")
+            return v1
+        if cache.get(k_neg):
+            if DEBUG: print("[coalesce] follower detecta NEG, aborta")
+            raise RuntimeError("negative-cache: recent failure")
+        with _inflight_lock:
+            ev = _inflight.get(k_main)
+            if ev is None or ev.is_set():
+                ev = threading.Event(); _inflight[k_main] = ev; leader = True
+                if DEBUG: print("[coalesce] follower toma liderazgo")
+
+    try:
+        payload = {"q": text, "source": src, "target": tgt, "format": "text"}
+        if DEBUG: print(f"[lt_translate] POST {URI}/translate")
+        r = session.post(f"{URI}/translate", json=payload, timeout=(3.0, REQUEST_TIMEOUT))
+        if r.status_code >= 400:
+            try: err = r.json()
+            except Exception: err = r.text
+            if DEBUG: print(f"[lt_translate] LTEngine ERROR {r.status_code}: {err}")
+            cache.add("MISS:"+k_main, 1, expire=NEG_TTL)
+            raise RuntimeError(f"LTEngine {r.status_code}: {err}  | payload={payload}")
+        r.raise_for_status()
+        out_single = r.json()
+        cache.add(k_main, out_single)
+        if DEBUG:
+            tt = (out_single.get('translatedText') or '')[:80]
+            print(f"[lt_translate] LTEngine OK -> '{tt}' (cached)")
+        return out_single
+
+    except Exception:
+        try: cache.add("MISS:"+k_main, 1, expire=NEG_TTL)
+        except Exception: pass
+        raise
+    finally:
+        with _inflight_lock:
+            ev = _inflight.pop(k_main, None)
+            if ev: ev.set()
 
 def build_payload(originalText=None, translatedText=None,
                   detectedLanguage=None, target=None,
@@ -190,10 +290,15 @@ def index() -> Response:
                 back["translatedRomanization"], back["originalRomanization"]
             )
         else:
+            display_tgt = translated_text
+            if target in ('ja','jpx'):
+                display_tgt = space_japanese_for_flutter(display_tgt)
+            elif target.startswith('zh'):
+                display_tgt = space_chinese_for_flutter(display_tgt)
             k_o = cache_key(display_src,      originalLanguage, f"pron:{originalLanguage}")
-            k_t = cache_key(translated_text,  target,           f"pron:{target}")
+            k_t = cache_key(display_tgt,  target,           f"pron:{target}")
             oIpa, oRom = _get_pron(cache, k_o, display_src,     originalLanguage)
-            tIpa, tRom = _get_pron(cache, k_t, translated_text, target)
+            tIpa, tRom = _get_pron(cache, k_t, display_tgt, target)
             payload = build_payload(display_src, translated_text, originalLanguage, target,
                                     oIpa, tIpa, oRom, tRom)
 
@@ -238,7 +343,6 @@ def index() -> Response:
 
             rev_key = "rev:" + cache_key(display, originalLanguage, target)
             cache_set(rev_key, {"payload_key": key, "orig_text": display})
-
             return retornar(payload, 200)
 
         original_text = sentence
@@ -303,11 +407,11 @@ def index() -> Response:
         with _inflight_lock:
             f1 = _inflight.get(pko)
             if f1 is None:
-                f1 = PRON_POOL.submit(_get_pron, cache, k_o, display_original,     originalLanguage)
+                f1 = PRON_POOL.submit(_get_pron, cache, k_o, display_original, originalLanguage)
                 _inflight[pko] = f1
             f2 = _inflight.get(pkt)
             if f2 is None:
-                f2 = PRON_POOL.submit(_get_pron, cache, k_t, translated_text, target)
+                f2 = PRON_POOL.submit(_get_pron, cache, k_t, display_translated, target)
                 _inflight[pkt] = f2
         try:
             originalIpa, originalRomanization = f1.result()
@@ -321,7 +425,7 @@ def index() -> Response:
             display_original, display_translated, originalLanguage, target, originalIpa, translatedIpa, originalRomanization, translatedRomanization
         )
         cache_set(key, payload)
-        rev_key = "rev:" + cache_key(display_translated, originalLanguage, target)
+        rev_key = "rev:" + cache_key(display_translated, target, originalLanguage)
         cache_set(rev_key, {"payload_key": key, "orig_text": display_original})
         return retornar(payload, 200)
 
@@ -347,22 +451,21 @@ def translate() -> Response:
     sentence = (get("q") or "").strip()
     source   = (get("source") or "auto").strip().lower()
     target   = (get("target") or "es").strip().lower()
-
-    if not sentence:
-        return retornar(build_payload("", "", source, target), 200)
-
+    
     sentence = sentence[:MAX_SENTENCE_LENGTH]
     if "  " in sentence or "\n" in sentence or "\t" in sentence:
         sentence = " ".join(sentence.split())
+        
+    if sentence.isdigit():
+        return retornar(build_payload(sentence, sentence, source, target), 200)
+    
+    sentence = ''.join(ch for ch in sentence if not ch.isdigit())
+    
+    if not sentence:
+        return retornar(build_payload("", "", source, target), 200)
 
     if source == "auto":
-        s = sentence
-        if any("\u3040" <= ch <= "\u30ff" for ch in s):   # JA kana
-            source = "ja"
-        elif any("\u3400" <= ch <= "\u9fff" for ch in s): # CJK
-            source = "zh"
-        else:
-            source = detect(sentence)
+        source = detect_lang_safe(sentence)
 
     key = cache_key(sentence, source, target)
     _cached = cache.get(key)
@@ -475,11 +578,39 @@ def translate() -> Response:
     )
     cache_set(key, resultado)
 
-    rev_key = "rev:" + cache_key(display_translated, source, target)
+    rev_key = "rev:" + cache_key(display_translated, target, source)
     cache_set(rev_key, {"payload_key": key, "orig_text": display_original})
-
     return retornar(resultado, 200)
 
+def _clean_ocr_by_lang(s: str, lang: str) -> str:
+    s = s or ""
+    def keep(ch: str) -> str:
+        c = ord(ch)
+        if ch.isspace(): return ' '
+        if ch.isdigit(): return ch
+        # LATIN (en, es, fr, de, it, pt)
+        if lang in {'en','es','fr','de','it','pt'}:
+            if ch.isalpha() and (('A' <= ch <= 'Z') or ('a' <= ch <= 'z') or 0x00C0 <= c <= 0x024F or 0x1E00 <= c <= 0x1EFF): return ch
+            return ' '
+        # CYRILLIC
+        if lang == 'ru':
+            return ch if (0x0400 <= c <= 0x04FF or 0x0500 <= c <= 0x052F) else ' '
+        # ARABIC
+        if lang == 'ar':
+            return ch if (0x0600 <= c <= 0x06FF or 0x0750 <= c <= 0x077F or 0x08A0 <= c <= 0x08FF) else ' '
+        # DEVANAGARI (hi)
+        if lang == 'hi':
+            return ch if (0x0900 <= c <= 0x097F) else ' '
+        # JAPANESE (ja/jpx): Hiragana, Katakana, Kanji
+        if lang in {'ja','jpx'}:
+            return ch if ((0x3040 <= c <= 0x30FF) or (0x31F0 <= c <= 0x31FF) or (0x3400 <= c <= 0x4DBF) or (0x4E00 <= c <= 0x9FFF)) else ' '
+        # CHINESE (zh, zh-cn, zh-tw): Han
+        if lang.startswith('zh'):
+            return ch if ((0x3400 <= c <= 0x4DBF) or (0x4E00 <= c <= 0x9FFF)) else ' '
+        if ch.isalpha() and 'LATIN' in unicodedata.name(ch, ''): return ch
+        return ' '
+    cleaned = ''.join(keep(ch) for ch in s)
+    return ' '.join(cleaned.split())
 
 @app.route("/ocr", methods=["POST"])
 @cross_origin(origins="*", methods=["POST"])
@@ -494,7 +625,7 @@ def ocr() -> Response:
 
     try:
         result = ocrInstance.predict(input=img)
-        texts = (result and result[0].get("rec_texts")) or []
+        texts = result[0]['rec_texts']
     except Exception as e:
         return retornar(build_payload(error=f"OCR Error: {e}"), 500)
 
@@ -502,17 +633,20 @@ def ocr() -> Response:
     if not ocrString:
         return retornar(build_payload("", "", "auto", target), 200)
 
-    ocrString = ocrString[:MAX_SENTENCE_LENGTH]
     if "  " in ocrString or "\n" in ocrString or "\t" in ocrString:
         ocrString = " ".join(ocrString.split())
+        
+    ocrString = ''.join(ch for ch in ocrString if not ch.isdigit())
 
     s = ocrString
-    if any("\u3040" <= ch <= "\u30ff" for ch in s):
-        lang = "ja"
-    elif any("\u3400" <= ch <= "\u9fff" for ch in s):
-        lang = "zh"
-    else:
-        lang = detect(s)
+    lang = detect_lang_safe(s)
+    SUPPORTED = {"en","es","fr","de","it","pt","ja","jpx","zh","zh-cn","zh-tw","ko","ru","ar","hi"}
+    if lang not in SUPPORTED:
+        lang = "en"
+        
+    s = _clean_ocr_by_lang(s, lang)
+    if not s:
+        return retornar(build_payload("", "", lang, target), 200)
 
     key = cache_key(ocrString, lang, target)
     _cached = cache.get(key)
@@ -628,28 +762,24 @@ def read_image_from_request():
         raise ValueError(f"Unexpected image shape {arr.shape}")
     return arr
 
-@app.route("/retranslate", methods=["POST"])
-@cross_origin(origins="*", methods=["POST"])
+@app.route("/retranslate", methods=["POST", "OPTIONS"])  # OPTIONS para preflight
+@cross_origin(origins="*", methods=["POST"])  # deja POST aquí; CORS se encarga del OPTIONS
 def retranslate() -> Response:
     data = orjson.loads(request.data or b"{}")
-    get = data.get
-    sentence   = (get("sentence")   or "").strip()
-    sourceLang = (get("sourceLang") or "").strip().lower()
-    targetLang = (get("targetLang") or "").strip().lower()
+    sentence   = (data.get("sentence")   or "").strip()
+    sourceLang = (data.get("sourceLang") or "").strip().lower()
+    targetLang = (data.get("targetLang") or "").strip().lower()
 
     if not sentence or not sourceLang or not targetLang:
         return retornar(build_payload(error="No data"), 422)
 
-    sentence = sentence[:MAX_SENTENCE_LENGTH]
-    if "  " in sentence or "\n" in sentence or "\t" in sentence:
-        sentence = " ".join(sentence.split())
+    sentence = " ".join(sentence.split())[:MAX_SENTENCE_LENGTH]
 
     key_payload = cache_key(sentence, sourceLang, targetLang)
     cache_del = getattr(cache, "delete", None)
     cache_set = getattr(cache, "set", cache.add)
 
     prev = cache.get(key_payload)
-
     if cache_del:
         cache_del(key_payload)
 
@@ -659,12 +789,11 @@ def retranslate() -> Response:
             or prev.get("translated") or prev.get("display_translated") or ""
         )
         if prev_trans:
-            old_disp_trans = prev_trans
             if targetLang in ("ja","jpx"):
-                old_disp_trans = space_japanese_for_flutter(old_disp_trans)
+                prev_trans = space_japanese_for_flutter(prev_trans)
             elif targetLang.startswith("zh"):
-                old_disp_trans = space_chinese_for_flutter(old_disp_trans)
-            old_rev_key = "rev:" + cache_key(old_disp_trans, sourceLang, targetLang)
+                prev_trans = space_chinese_for_flutter(prev_trans)
+            old_rev_key = "rev:" + cache_key(prev_trans, targetLang, sourceLang)
             if cache_del:
                 cache_del(old_rev_key)
 
@@ -677,16 +806,29 @@ def retranslate() -> Response:
             _inflight[ltk] = fut
     try:
         data_lt = fut.result()
+    except Exception:
+        with _inflight_lock:
+            if _inflight.get(ltk) is fut:
+                del _inflight[ltk]
+        return retornar(build_payload(error="translate_failed"), 502)
     finally:
         with _inflight_lock:
             if _inflight.get(ltk) is fut:
                 del _inflight[ltk]
 
-    translatedText = (data_lt.get("translatedText") or "")
-    if translatedText.endswith("…"):
-        translatedText = translatedText[:-1].rstrip()
-    elif translatedText.endswith("..."):
-        translatedText = translatedText[:-3].rstrip()
+    # --- payload seguro ---
+    if not isinstance(data_lt, dict):
+        return retornar(build_payload(error="bad_backend_payload"), 502)
+
+    translatedText = (
+        data_lt.get("translatedText")
+        or data_lt.get("translated_text")
+        or ""
+    ).rstrip()
+    for suf in ("…", "...", "……"):
+        if translatedText.endswith(suf):
+            translatedText = translatedText[:-len(suf)].rstrip()
+            break
 
     display_original = sentence
     if sourceLang in ("ja","jpx"):
@@ -700,19 +842,15 @@ def retranslate() -> Response:
     elif targetLang.startswith("zh"):
         display_translated = space_chinese_for_flutter(display_translated)
 
+    # IPA/romanización (pool separado del de traducción)
     k_o = cache_key(display_original,  sourceLang, f"pron:{sourceLang}")
     k_t = cache_key(display_translated, targetLang, f"pron:{targetLang}")
-    pko = "pron:" + k_o
-    pkt = "pron:" + k_t
+    pko, pkt = "pron:" + k_o, "pron:" + k_t
     with _inflight_lock:
-        f1 = _inflight.get(pko)
-        if f1 is None:
-            f1 = PRON_POOL.submit(_get_pron, cache, k_o, display_original,  sourceLang)
-            _inflight[pko] = f1
-        f2 = _inflight.get(pkt)
-        if f2 is None:
-            f2 = PRON_POOL.submit(_get_pron, cache, k_t, display_translated, targetLang)
-            _inflight[pkt] = f2
+        f1 = _inflight.get(pko) or PRON_POOL.submit(_get_pron, cache, k_o, display_original,  sourceLang)
+        _inflight[pko] = f1
+        f2 = _inflight.get(pkt) or PRON_POOL.submit(_get_pron, cache, k_t, display_translated, targetLang)
+        _inflight[pkt] = f2
     try:
         (originalIpa,  originalRomanization)    = f1.result()
         (translatedIpa, translatedRomanization) = f2.result()
@@ -727,7 +865,7 @@ def retranslate() -> Response:
     )
 
     cache_set(key_payload, resultado)
-    rev_key = "rev:" + cache_key(display_translated, sourceLang, targetLang)
+    rev_key = "rev:" + cache_key(display_translated, targetLang, sourceLang)
     cache_set(rev_key, {"payload_key": key_payload, "orig_text": display_original})
 
     return retornar(resultado, 200)

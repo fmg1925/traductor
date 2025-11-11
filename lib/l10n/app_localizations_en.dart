@@ -304,4 +304,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ipaOpenOiDiphthongName => 'diphthong';
+
+  @override
+  String get network_error => 'Network error. Check your connection.';
+
+  @override
+  String get timeout => 'Request timed out.';
+
+  @override
+  String get ssl_error => 'Secure connection failed (SSL).';
+
+  @override
+  String get canceled => 'Request canceled.';
+
+  @override
+  String get bad_request => 'Bad request.';
+
+  @override
+  String get unauthorized => 'Unauthorized. Please sign in.';
+
+  @override
+  String get forbidden => 'Forbidden.';
+
+  @override
+  String get not_found => 'Server offline / resource not found.';
+
+  @override
+  String get method_not_allowed => 'Method not allowed.';
+
+  @override
+  String get conflict => 'Conflict.';
+
+  @override
+  String get unprocessable_entity => 'Unprocessable entity.';
+
+  @override
+  String get too_many_requests => 'Too many requests. Try again later.';
+
+  @override
+  String get server_error => 'Internal server error.';
+
+  @override
+  String get bad_gateway => 'Bad gateway.';
+
+  @override
+  String get service_unavailable => 'Service unavailable.';
+
+  @override
+  String get gateway_timeout => 'Gateway timeout.';
+
+  @override
+  String get unknown_error => 'Unexpected error.';
+
+  @override
+  String get no_text_in_ocr => 'No text detected in OCR.';
 }

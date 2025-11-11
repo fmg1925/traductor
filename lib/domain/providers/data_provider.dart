@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io' show Platform, File;
+import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 import '../../entities/translation.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -15,17 +15,17 @@ class DataProvider {
   final RequestLimiter limiter;
 
   Uri get uri => kIsWeb
-      ? Uri.parse('http://172.19.226.182:3000')
+      ? Uri.parse('https://herpetologic-nonmelodiously-maudie.ngrok-free.dev')
       : (Platform.isAndroid
-          ? Uri.parse('http://10.0.2.2:3000')
-          : Uri.parse('http://127.0.0.1:3000'));
+          ? Uri.parse('https://herpetologic-nonmelodiously-maudie.ngrok-free.dev')
+          : Uri.parse('https://herpetologic-nonmelodiously-maudie.ngrok-free.dev'));
 
   void dispose() => _client.close();
 
   Future<http.Response> post(Uri url, {Map<String, String>? headers, Object? body}) {
     return _client
         .post(url, headers: headers, body: body)
-        .timeout(const Duration(seconds: 15));
+        .timeout(const Duration(seconds: 5));
   }
 }
 
@@ -125,12 +125,9 @@ Future<Translation> retranslate(
           'Pragma': 'no-cache',
         },
         body: jsonEncode({
-          'q': norm,
-          'source': source,
-          'target': target,
-          'format': 'text',
-          // si tu backend soporta forzar recálculo, agrega un nonce opcional:
-          '_': DateTime.now().millisecondsSinceEpoch
+          'sentence': norm,
+          'sourceLang': source,
+          'targetLang': target,
         }),
       );
 
@@ -166,7 +163,6 @@ Future<Translation> retranslate(
   );
 }
 
-
 Future<String> translateWord({
   required DataProvider provider,
   required String word,
@@ -188,27 +184,4 @@ Future<String> translateWord({
     final m = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
     return (m['translatedText'] as String?) ?? '';
   }, cache: true);
-}
-
-Future<String> ocr({
-  required DataProvider provider,
-  required File imageFile,
-  required String target,
-}) async {
-  final key = 'ocr|$target|${imageFile.path.hashCode}';
-
-  return provider.limiter.run<String>(key, () async {
-    final uri = Uri.parse('${provider.uri}/ocr');
-    final req = http.MultipartRequest('POST', uri)
-      ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
-
-    final streamed = await req.send().timeout(const Duration(seconds: 30));
-    final res = await http.Response.fromStream(streamed);
-
-    if (res.statusCode != 200) {
-      throw Exception('HTTP ${res.statusCode}: ${res.body}');
-    }
-    final m = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-    return (m['translatedText'] as String?) ?? '';
-  }, cache: false);
 }

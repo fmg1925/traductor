@@ -168,8 +168,8 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                         ),
                       ),
                     ),
-                    trailing: FittedBox(
-                      fit: BoxFit.scaleDown,
+                    trailing: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 220),
                       child: ValueListenableBuilder(
                         valueListenable: tts.speaking,
                         builder: (context, isSpeaking, _) {
