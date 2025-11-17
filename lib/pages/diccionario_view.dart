@@ -81,7 +81,7 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _SearchField(controller: _search),
+                  _SearchField(controller: _search, onChanged: () => setState(() {})),
                 ],
               ),
             );
@@ -92,7 +92,7 @@ class _DiccionarioViewState extends State<DiccionarioView> {
             itemCount: entries.length + 1,
             separatorBuilder: (_, _) => const SizedBox(height: 8),
             itemBuilder: (context, i) {
-              if (i == 0) return _SearchField(controller: _search);
+              if (i == 0) return _SearchField(controller: _search, onChanged: () => setState(() {}));
               final e = entries[i - 1];
               final parts = e.key.split('::');
               final word = parts[0];
@@ -173,126 +173,126 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                       child: ValueListenableBuilder(
                         valueListenable: tts.speaking,
                         builder: (context, isSpeaking, _) {
-                          return Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton.filledTonal(
-                                tooltip: isSpeaking ? t.stop : t.listen,
-                                icon: Icon(
-                                  isSpeaking ? Icons.stop : Icons.volume_up,
+                          return FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton.filledTonal(
+                                  tooltip: isSpeaking ? t.stop : t.listen,
+                                  icon: Icon(
+                                    isSpeaking ? Icons.stop : Icons.volume_up,
+                                  ),
+                                  onPressed: () async {
+                                    if (isSpeaking) return await tts.stop();
+                                    await tts.changeLanguage(parts[1]);
+                                    await tts.speak(word);
+                                  },
+                                  iconSize: 20,
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: 44,
+                                    height: 44,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
                                 ),
-                                onPressed: () async {
-                                  if (isSpeaking) { return await tts.stop(); }
-                                  await tts.changeLanguage(
-                                    parts[1],
-                                  );
-                                  await tts.speak(
-                                    word,
-                                  );
-                                },
-                                iconSize: 20,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 44,
-                                  height: 44,
-                                ),
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              const SizedBox(width: 6),
-                              IconButton.filledTonal(
-                                tooltip: t.copy,
-                                icon: const Icon(Icons.copy_all),
-                                onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: word));
-                                  ScaffoldMessenger.of(context)
-                                    ..hideCurrentSnackBar()
-                                    ..showSnackBar(
-                                      SnackBar(content: Text(t.copied)),
+                                const SizedBox(width: 6),
+                                IconButton.filledTonal(
+                                  tooltip: t.copy,
+                                  icon: const Icon(Icons.copy_all),
+                                  onPressed: () {
+                                    Clipboard.setData(
+                                      ClipboardData(text: word),
                                     );
-                                },
-                                iconSize: 20,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 44,
-                                  height: 44,
+                                    ScaffoldMessenger.of(context)
+                                      ..hideCurrentSnackBar()
+                                      ..showSnackBar(
+                                        SnackBar(content: Text(t.copied)),
+                                      );
+                                  },
+                                  iconSize: 20,
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: 44,
+                                    height: 44,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
                                 ),
-                                visualDensity: VisualDensity.compact,
-                              ),
-                          
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              IconButton.filledTonal(
-                                tooltip: isSpeaking ? t.stop : t.listen,
-                                icon: Icon(
-                                  isSpeaking ? Icons.stop : Icons.volume_up,
+                                const SizedBox(width: 10),
+                                IconButton.filledTonal(
+                                  tooltip: isSpeaking ? t.stop : t.listen,
+                                  icon: Icon(
+                                    isSpeaking ? Icons.stop : Icons.volume_up,
+                                  ),
+                                  onPressed: () async {
+                                    if (isSpeaking) return await tts.stop();
+                                    await tts.changeLanguage(parts[2]);
+                                    await tts.speak(e.value);
+                                  },
+                                  iconSize: 20,
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: 44,
+                                    height: 44,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
                                 ),
-                                onPressed: () async {
-                                  if (isSpeaking) { return await tts.stop(); }
-                                  await tts.changeLanguage(
-                                    parts[2],
-                                  );
-                                  await tts.speak(
-                                    e.value,
-                                  );
-                                },
-                                iconSize: 20,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 44,
-                                  height: 44,
-                                ),
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              const SizedBox(width: 6),
-                              IconButton.filledTonal(
-                                tooltip: t.copy,
-                                icon: const Icon(Icons.copy_all),
-                                onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: e.value));
-                                  ScaffoldMessenger.of(context)
-                                    ..hideCurrentSnackBar()
-                                    ..showSnackBar(
-                                      SnackBar(content: Text(t.copied)),
+                                const SizedBox(width: 6),
+                                IconButton.filledTonal(
+                                  tooltip: t.copy,
+                                  icon: const Icon(Icons.copy_all),
+                                  onPressed: () {
+                                    Clipboard.setData(
+                                      ClipboardData(text: e.value),
                                     );
-                                },
-                                iconSize: 20,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 44,
-                                  height: 44,
+                                    ScaffoldMessenger.of(context)
+                                      ..hideCurrentSnackBar()
+                                      ..showSnackBar(
+                                        SnackBar(content: Text(t.copied)),
+                                      );
+                                  },
+                                  iconSize: 20,
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: 44,
+                                    height: 44,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
                                 ),
-                                visualDensity: VisualDensity.compact,
-                              ),
-                          
-                              const SizedBox(width: 4),
-                          
-                              IconButton(
-                                tooltip: t.delete,
-                                icon: const Icon(Icons.more_vert),
-                                onPressed: () async {
-                                  final picked = await showModalBottomSheet<bool>(
-                                    context: context,
-                                    showDragHandle: true,
-                                    backgroundColor: theme.colorScheme.surface,
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(16),
-                                      ),
-                                    ),
-                                    builder: (ctx) => SafeArea(
-                                      child: ListTile(
-                                        leading: const Icon(Icons.delete_outline),
-                                        title: Text(t.delete),
-                                        onTap: () => Navigator.pop(ctx, true),
-                                      ),
-                                    ),
-                                  );
-                                  if (picked == true) {
-                                    await b.delete(e.key);
-                                    if (!mounted) return;
-                                  }
-                                },
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                IconButton(
+                                  tooltip: t.delete,
+                                  icon: const Icon(Icons.more_vert),
+                                  onPressed: () async {
+                                    final picked =
+                                        await showModalBottomSheet<bool>(
+                                          context: context,
+                                          showDragHandle: true,
+                                          backgroundColor:
+                                              theme.colorScheme.surface,
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.vertical(
+                                              top: Radius.circular(16),
+                                            ),
+                                          ),
+                                          builder: (ctx) => SafeArea(
+                                            child: ListTile(
+                                              leading: const Icon(
+                                                Icons.delete_outline,
+                                              ),
+                                              title: Text(t.delete),
+                                              onTap: () =>
+                                                  Navigator.pop(ctx, true),
+                                            ),
+                                          ),
+                                        );
+                                    if (picked == true) {
+                                      await b.delete(e.key);
+                                      if (!mounted) return;
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
                           );
-                        }
+                        },
                       ),
                     ),
                   ),
@@ -308,7 +308,10 @@ class _DiccionarioViewState extends State<DiccionarioView> {
 
 class _SearchField extends StatelessWidget {
   final TextEditingController controller;
-  const _SearchField({required this.controller});
+  final VoidCallback onChanged;
+
+  const _SearchField({required this.controller,
+  required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -329,7 +332,7 @@ class _SearchField extends StatelessWidget {
             borderSide: BorderSide.none,
           ),
         ),
-        onChanged: (_) => (context as Element).markNeedsBuild(),
+        onChanged: (_) => onChanged(),
       ),
     );
   }
