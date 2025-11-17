@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:traductor/helpers/popup.dart';
 import 'package:traductor/main.dart';
 import '../l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
@@ -187,6 +188,22 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                                   ),
                                   onPressed: () async {
                                     if (isSpeaking) return await tts.stop();
+                                    final langs = languages(context);
+                                    final langName = langs[parts[1]];
+                                    final available = await tts.isLanguageAvailable(
+                                      ttsLocaleFor(parts[1]),
+                                    );
+
+                                    if (!context.mounted) return;
+
+                                    if (available != true) {
+                                      PopUp.showPopUp(
+                                        context,
+                                        t.missing_language(langName!),
+                                        t.language_not_installed(langName),
+                                      );
+                                      return;
+                                    }
                                     await tts.changeLanguage(ttsLocaleFor(parts[1]));
                                     await tts.speak(word);
                                   },
@@ -226,6 +243,22 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                                   ),
                                   onPressed: () async {
                                     if (isSpeaking) return await tts.stop();
+                                    final langs = languages(context);
+                                    final langName = langs[parts[2]];
+                                    final available = await tts.isLanguageAvailable(
+                                      ttsLocaleFor(parts[2]),
+                                    );
+
+                                    if (!context.mounted) return;
+
+                                    if (available != true) {
+                                      PopUp.showPopUp(
+                                        context,
+                                        t.missing_language(langName!),
+                                        t.language_not_installed(langName),
+                                      );
+                                      return;
+                                    }
                                     await tts.changeLanguage(ttsLocaleFor(parts[2]));
                                     await tts.speak(e.value);
                                   },

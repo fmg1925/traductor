@@ -109,21 +109,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<bool> _isSpeechToTextLanguageInstalled(String language) async {
-    final locales = await _speechToText.locales();
-    language = language.substring(0, 2);
-    for (var locale in locales) {
-      if (locale.localeId.substring(0, 2) == language) return true;
-    }
-    return false;
-  }
-
   Future<void> _startListening() async {
     if (!mounted || !_speechEnabled.value) return;
     if (_speechToText.isListening || _speechListening) return;
     try {
       _speechListening = true;
-      forceWebSpeechLang(ttsLocaleFor(targetLang));
+      forceWebSpeechLang(ttsLocaleFor(sourceLang));
       await _speechToText.listen(
         onResult: _onSpeechResult,
         listenOptions: SpeechListenOptions(
@@ -459,21 +450,7 @@ class _HomePageState extends State<HomePage> {
                     if (_speechListening) {
                       await _stopListening();
                     } else {
-                      if (!await _isSpeechToTextLanguageInstalled(
-                        ttsLocaleFor(sourceLang),
-                      )) {
-                        if (!mounted) return;
-                        final langs = languages(context);
-                        final langName = langs[sourceLang];
-                        PopUp.showPopUp(
-                          context,
-                          t.error,
-                          t.language_not_installed(langName!),
-                        );
-                        setState(() {});
-                      } else {
                         await _startListening();
-                      }
                     }
                   },
           ),
