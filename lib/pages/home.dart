@@ -580,138 +580,200 @@ class _HomePageState extends State<HomePage> {
   }
 
   Padding generarButton() {
-    final t = AppLocalizations.of(context);
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isNarrow = constraints.maxWidth < 420;
+  final t = AppLocalizations.of(context);
+  final scheme = Theme.of(context).colorScheme;
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 420;
 
-          final ocrBtn = FilledButton.icon(
-            onPressed: _ocr,
-            icon: const Icon(Icons.document_scanner),
-            label: const Text('OCR'),
-            style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(
-                scheme.secondaryContainer,
-              ),
+        final ocrBtn = FilledButton.icon(
+          onPressed: _ocr,
+          icon: const Icon(Icons.document_scanner),
+          label: const Text('OCR'),
+          style: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(
+              scheme.secondaryContainer,
             ),
-          );
+          ),
+        );
 
-          if (!isNarrow) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            FilledButton.icon(
-                              onPressed: _generar,
-                              icon: const Icon(Icons.play_arrow),
-                              label: Text(
-                                _controller.text.isEmpty
-                                    ? t.generate_translation
-                                    : t.translate,
-                              ),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: scheme.secondaryContainer,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(14),
-                                    bottomLeft: Radius.circular(14),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            PopupMenuButton<String>(
-                              enabled: retranslateReady,
-                              onSelected: (v) { if (v == 'retranslate') _retraducir(); },
-                              itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  value: 'retranslate',
-                                  child: ListTile(
-                                    dense: true,
-                                    leading: const Icon(Icons.autorenew),
-                                    title: Text(
-                                      t.retraducir,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              child: FilledButton(
-                                onPressed: null,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: scheme.secondaryContainer,
-                                  foregroundColor: scheme.onSecondaryContainer,
-                                  disabledBackgroundColor: retranslateReady ? scheme.secondaryContainer : scheme.onTertiaryContainer,
-                                  disabledForegroundColor: scheme.onSecondaryContainer,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                                  minimumSize: const Size(40, 40),
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(14), bottomRight: Radius.circular(14),
-                                    ),
-                                  ),
-                                ),
-                                child: Icon(Icons.arrow_drop_down, color: retranslateReady ? scheme.onPrimary : scheme.onInverseSurface),
-                            ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(width: 8),
-                        tipoFraseDropdown(scheme, Theme.of(context), t),
-                      ],
-                    ),
-                  ],
-                ),
-                ocrBtn,
-              ],
-            );
-          }
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        if (!isNarrow) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: _generar,
-                      icon: const Icon(Icons.play_arrow),
-                      label: Text(
-                        _controller.text.isEmpty
-                            ? t.generate_translation
-                            : t.translate,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: _generar,
+                            icon: const Icon(Icons.play_arrow),
+                            label: Text(
+                              _controller.text.isEmpty
+                                  ? t.generate_translation
+                                  : t.translate,
+                            ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: scheme.secondaryContainer,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(14),
+                                  bottomLeft: Radius.circular(14),
+                                ),
+                              ),
+                            ),
+                          ),
+                          PopupMenuButton<String>(
+                            enabled: retranslateReady,
+                            onSelected: (v) {
+                              if (v == 'retranslate') _retraducir();
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'retranslate',
+                                child: ListTile(
+                                  dense: true,
+                                  leading: const Icon(Icons.autorenew),
+                                  title: Text(t.retraducir),
+                                ),
+                              ),
+                            ],
+                            child: FilledButton(
+                              onPressed: null,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: scheme.secondaryContainer,
+                                foregroundColor:
+                                    scheme.onSecondaryContainer,
+                                disabledBackgroundColor: retranslateReady
+                                    ? scheme.secondaryContainer
+                                    : scheme.onTertiaryContainer,
+                                disabledForegroundColor:
+                                    scheme.onSecondaryContainer,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                minimumSize: const Size(40, 40),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                    topRight: Radius.circular(14),
+                                    bottomRight: Radius.circular(14),
+                                  ),
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.arrow_drop_down,
+                                color: retranslateReady
+                                    ? scheme.onPrimary
+                                    : scheme.onInverseSurface,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(
-                          scheme.secondaryContainer,
-                        ),
-                      ),
-                    ),
+                      const SizedBox(width: 8),
+                      tipoFraseDropdown(scheme, Theme.of(context), t),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  tipoFraseDropdown(scheme, Theme.of(context), t),
                 ],
               ),
-              const SizedBox(height: 8),
-              Align(alignment: Alignment.centerRight, child: ocrBtn),
+              ocrBtn,
             ],
           );
-        },
-      ),
-    );
-  }
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: _generar,
+                          icon: const Icon(Icons.play_arrow),
+                          label: Text(
+                            _controller.text.isEmpty
+                                ? t.generate_translation
+                                : t.translate,
+                          ),
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStatePropertyAll(
+                              scheme.secondaryContainer,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      PopupMenuButton<String>(
+                        enabled: retranslateReady,
+                        onSelected: (v) {
+                          if (v == 'retranslate') _retraducir();
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'retranslate',
+                            child: ListTile(
+                              dense: true,
+                              leading: const Icon(Icons.autorenew),
+                              title: Text(t.retraducir),
+                            ),
+                          ),
+                        ],
+                        child: FilledButton(
+                          onPressed: null,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: scheme.secondaryContainer,
+                            foregroundColor: scheme.onSecondaryContainer,
+                            disabledBackgroundColor: retranslateReady
+                                ? scheme.secondaryContainer
+                                : scheme.onTertiaryContainer,
+                            disabledForegroundColor:
+                                scheme.onSecondaryContainer,
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8),
+                            minimumSize: const Size(40, 40),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.arrow_drop_down,
+                            color: retranslateReady
+                                ? scheme.onPrimary
+                                : scheme.onInverseSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                tipoFraseDropdown(scheme, Theme.of(context), t),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ocrBtn,
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
 
   Material tipoFraseDropdown(
     ColorScheme scheme,
