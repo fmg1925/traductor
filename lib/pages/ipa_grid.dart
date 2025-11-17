@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:traductor/l10n/app_localizations.dart';
 import 'package:traductor/main.dart' show ttsLocaleFor;
 import 'package:traductor/pages/home.dart' show tts;
-import 'package:universal_io/io.dart';
 
 class IpaGrid extends StatefulWidget {
   const IpaGrid({super.key});
@@ -113,6 +112,16 @@ class _IpaGridState extends State<IpaGrid> {
     final scheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
+    final size = MediaQuery.sizeOf(context);
+    final width = size.width;
+
+    const targetTileWidth = 180.0;
+    final crossAxisCount = (width / targetTileWidth).floor().clamp(2, 6);
+
+    final spacing = (width * 0.02).clamp(6.0, 16.0);
+
+    final childAspectRatio = 0.9;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('IPA', style: TextStyle(color: scheme.onPrimary)),
@@ -125,7 +134,10 @@ class _IpaGridState extends State<IpaGrid> {
       body: GridView.builder(
         padding: const EdgeInsets.all(12),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: Platform.isAndroid ? 2 : 4, mainAxisSpacing: 6, crossAxisSpacing: 8, childAspectRatio: Platform.isAndroid ? 1 : 2,
+          crossAxisCount: crossAxisCount,
+          mainAxisSpacing: spacing,
+          crossAxisSpacing: spacing,
+          childAspectRatio: childAspectRatio,
         ),
         itemCount: _symbols.length,
         itemBuilder: (context, i) {
