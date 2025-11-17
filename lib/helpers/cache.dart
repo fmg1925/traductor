@@ -11,8 +11,8 @@ class _CacheEntry<T> {
 class RequestLimiter {
   RequestLimiter({
     this.minGap = const Duration(milliseconds: 800),
-    this.timeout = const Duration(seconds: 1),
-    this.cacheTtl = const Duration(seconds: 1),
+    this.timeout = const Duration(seconds: 120),
+    this.cacheTtl = const Duration(seconds: 5),
   });
 
   final Duration minGap;
