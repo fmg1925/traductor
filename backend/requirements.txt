@@ -1,7 +1,7 @@
 -i https://www.paddlepaddle.org.cn/packages/stable/cu129/
 
-Flask==3.1.2
-python-dotenv==1.1.1
+flask==3.1.2
+python-dotenv==1.2.1
 requests==2.32.5
 flask-cors==6.0.1
 diskcache==5.6.3

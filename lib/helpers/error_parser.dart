@@ -5,8 +5,8 @@ class ErrorParser {
   static String parseError(String error, BuildContext ctx) {
     final t = AppLocalizations.of(ctx);
     int idx = error.indexOf(RegExp('\\d+'));
+    if (error.toLowerCase().contains('future not completed')) return t.timeout;
     error = error.substring(idx, idx + 3);
-
     switch (error) {
       case '400':
         return t.bad_request;
@@ -35,7 +35,7 @@ class ErrorParser {
       case '504':
         return t.gateway_timeout;
       default:
-        return t.unknown_error;
+        return "${t.unknown_error} $error";
     }
   }
 }

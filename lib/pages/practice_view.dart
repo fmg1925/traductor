@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:traductor/entities/translation.dart';
+import 'package:traductor/helpers/error_parser.dart' show ErrorParser;
 import 'package:traductor/helpers/force_web_speech_lang.dart';
 import 'package:traductor/helpers/popup.dart';
 import 'package:traductor/main.dart';
@@ -348,10 +349,17 @@ class TranslationsArea extends StatefulWidget {
 
 class _TranslationsAreaState extends State<TranslationsArea> {
   bool _errorShown = false;
+  Future<Translation>? _lastFuture;
 
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+
+    if (widget.future != _lastFuture) {
+      _lastFuture = widget.future;
+      _errorShown = false;
+    }
+
     if (widget.future == null) {
       return Center(
         child: Text(
@@ -385,12 +393,11 @@ class _TranslationsAreaState extends State<TranslationsArea> {
                 PopUp.showPopUp(
                   context,
                   t.error,
-                  t.error_translation(snap.error.toString()),
+                  t.error_translation(
+                    ErrorParser.parseError(snap.error.toString(), context),
+                  ),
                 );
               }
-            });
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (mounted) _errorShown = false;
             });
           }
           return const SizedBox.shrink();

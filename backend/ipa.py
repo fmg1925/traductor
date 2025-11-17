@@ -98,7 +98,7 @@ def pronounce(sentence: str, lang_code: str) -> Pronunciation:
                 roman.append(p or w)
             else:
                 roman.append(w)
-        return Pronunciation(roman=roman, ipa=[''] * len(roman))
+        return Pronunciation(roman=roman, ipa=[])
 
     orig_words = [t for t in sentence.split() if _is_word_token_py(t)]
     if not orig_words:
@@ -157,31 +157,26 @@ def ipa_word(sentence: str, lang_code: str) -> list[str]:
     if not tokens:
         return []
 
-    primary = LANG_MAP.get(base, base) or base or 'en-us'
-    candidates = []
-    for c in (primary, base, 'en-us', 'en', 'es'):
-        if c and ('mb' not in c.lower()):
-            if c not in candidates:
-                candidates.append(c)
+    if base in ('en', 'en-us'):
+        base = 'en-us'
+    elif base in ('es', 'es-ES', 'spa'):
+        base = 'es'
 
     out = None
-    for lang in candidates:
-        try:
-            out = phonemize(
-                tokens,
-                language=lang,
-                backend='espeak',
-                strip=True,
-                with_stress=True,
-                njobs=1,
-                punctuation_marks=_PUNCT,
-                preserve_punctuation=False,
-                separator=_SEP,
-            )
-            break
-        except:
-            out = None
-            continue
+    try:
+        out = phonemize(
+            tokens,
+            language=base,
+            backend='espeak',
+            strip=True,
+            with_stress=True,
+            njobs=4,
+            punctuation_marks=_PUNCT,
+            preserve_punctuation=False,
+            separator=_SEP,
+        )
+    except:
+        out = None
 
     if out is None:
         return []

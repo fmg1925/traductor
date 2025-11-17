@@ -7,6 +7,7 @@ import '../entities/translation.dart';
 Future<Translation> ocrFromBytes({
   required DataProvider provider,
   required Uint8List bytes,
+  required String originalLanguage,
   required String target,
 }) async {
   final uri = Uri.parse('${provider.uri}/ocr');
@@ -14,7 +15,7 @@ Future<Translation> ocrFromBytes({
   final res = await http.post(
     uri,
     headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-    body: jsonEncode({'image_b64': base64Encode(bytes), 'target': target}),
+    body: jsonEncode({'image_b64': base64Encode(bytes), 'originalLanguage': originalLanguage, 'target': target}),
   );
 
   if (res.statusCode != 200) {

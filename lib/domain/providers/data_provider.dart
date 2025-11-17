@@ -25,7 +25,7 @@ class DataProvider {
   Future<http.Response> post(Uri url, {Map<String, String>? headers, Object? body}) {
     return _client
         .post(url, headers: headers, body: body)
-        .timeout(const Duration(seconds: 5));
+        .timeout(const Duration(seconds: 1));
   }
 }
 

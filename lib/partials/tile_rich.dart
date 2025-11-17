@@ -147,31 +147,12 @@ class TileRich extends StatelessWidget {
 
           if (!hasRail) return left;
 
-          final narrow = c.maxWidth < 360;
-
-          if (!narrow) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: left),
-                const SizedBox(width: _gap),
-                SizedBox(width: _railW, child: rail),
-              ],
-            );
-          }
-
-          return Column(
+          return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              left,
-              const SizedBox(height: _gap),
-              Align(
-                alignment: Alignment.centerRight,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints.tightFor(width: _railW),
-                  child: rail,
-                ),
-              ),
+              Expanded(child: left),
+              const SizedBox(width: _gap),
+              SizedBox(width: _railW, child: rail),
             ],
           );
         },
@@ -198,39 +179,47 @@ Widget rightButtons(
           ValueListenableBuilder(
             valueListenable: tts.speaking,
             builder: (context, isListening, _) {
-              return IconButton.filledTonal(
-                icon: Icon(isListening ? Icons.stop : Icons.volume_up),
-                style: IconButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1.2)),
-                tooltip: isListening ? t.stop : t.listen,
-                onPressed: onTts,
-                iconSize: 20,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 48,
-                  height: 48,
-                ),
-                visualDensity: VisualDensity.compact,
-              );
+              return botonTts(isListening, context, t, onTts);
             },
           ),
           const SizedBox(height: 4),
-          IconButton.filledTonal(
-            icon: const Icon(Icons.copy_all),
-            tooltip: t.copy,
-            style: IconButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1.2)),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: copyText));
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(SnackBar(content: Text(t.copied)));
-            },
-            iconSize: 20,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-            visualDensity: VisualDensity.compact,
-          ),
+          botonCopy(t, context, copyText),
         ],
       ),
     ),
   );
+}
+
+IconButton botonCopy(AppLocalizations t, BuildContext context, String copyText) {
+  return IconButton.filledTonal(
+          icon: const Icon(Icons.copy_all),
+          tooltip: t.copy,
+          style: IconButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1.2)),
+          onPressed: () {
+            Clipboard.setData(ClipboardData(text: copyText));
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(content: Text(t.copied)));
+          },
+          iconSize: 20,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+          visualDensity: VisualDensity.compact,
+        );
+}
+
+IconButton botonTts(bool isListening, BuildContext context, AppLocalizations t, VoidCallback onTts) {
+  return IconButton.filledTonal(
+              icon: Icon(isListening ? Icons.stop : Icons.volume_up),
+              style: IconButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1.2)),
+              tooltip: isListening ? t.stop : t.listen,
+              onPressed: onTts,
+              iconSize: 20,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(
+                width: 48,
+                height: 48,
+              ),
+              visualDensity: VisualDensity.compact,
+            );
 }

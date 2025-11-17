@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:traductor/helpers/error_parser.dart';
-import 'package:traductor/helpers/force_web_speech_lang.dart' show forceWebSpeechLang;
+import 'package:traductor/helpers/force_web_speech_lang.dart';
 import 'package:traductor/helpers/tts.dart';
 import 'package:traductor/main.dart';
 import 'package:traductor/pages/diccionario_view.dart';
@@ -123,7 +123,7 @@ class _HomePageState extends State<HomePage> {
     if (_speechToText.isListening || _speechListening) return;
     try {
       _speechListening = true;
-      if (kIsWeb) forceWebSpeechLang(ttsLocaleFor(targetLang));
+      forceWebSpeechLang(ttsLocaleFor(targetLang));
       await _speechToText.listen(
         onResult: _onSpeechResult,
         listenOptions: SpeechListenOptions(
@@ -245,6 +245,7 @@ class _HomePageState extends State<HomePage> {
         translationFuture = ocrFromBytes(
           provider: provider,
           bytes: bytes,
+          originalLanguage: sourceLang,
           target: targetLang,
         );
       });
@@ -800,10 +801,17 @@ class TranslationsArea extends StatefulWidget {
 
 class _TranslationsAreaState extends State<TranslationsArea> {
   bool _errorShown = false;
+  Future<Translation>? _lastFuture;
 
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+
+    if (widget.future != _lastFuture) {
+      _lastFuture = widget.future;
+      _errorShown = false;
+    }
+
     if (widget.future == null) {
       return Center(
         child: Text(
@@ -855,9 +863,6 @@ class _TranslationsAreaState extends State<TranslationsArea> {
                   ),
                 );
               }
-            });
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (mounted) _errorShown = false;
             });
           }
           return const SizedBox.shrink();

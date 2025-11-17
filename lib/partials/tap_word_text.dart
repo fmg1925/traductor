@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:traductor/l10n/app_localizations.dart';
 import '../helpers/word_cache.dart';
 
 class TapWordText extends StatefulWidget {
@@ -87,47 +88,87 @@ class _TapWordTextState extends State<TapWordText> {
   }
 
   Future<void> _onTapWord(String token, int wordIndex) async {
-  if (_loadingWordIndex != null) return;
-  final trim = token.trim();
-  if (trim.isEmpty) return;
+    if (_loadingWordIndex != null) return;
+    final trim = token.trim();
+    if (trim.isEmpty) return;
 
-  final effectiveTarget = widget.inverse ? widget.sourceLang : widget.targetLang;
-  final effectiveOrigin = widget.inverse ? widget.targetLang : widget.sourceLang;
+    final effectiveTarget = widget.inverse
+        ? widget.sourceLang
+        : widget.targetLang;
+    final effectiveOrigin = widget.inverse
+        ? widget.targetLang
+        : widget.sourceLang;
 
-  setState(() => _loadingWordIndex = wordIndex);
-  try {
-    final result = await WordCache.get(trim, effectiveOrigin, effectiveTarget);
-    if (!mounted) return;
+    setState(() => _loadingWordIndex = wordIndex);
+    try {
+      final result = await WordCache.get(
+        trim,
+        effectiveOrigin,
+        effectiveTarget,
+      );
+      if (!mounted) return;
 
-    final scheme = Theme.of(context).colorScheme;
-
-    await showDialog(
-      context: context,
-      builder: (_) {
-        String? localResult = result;
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: Text('“$trim” → $effectiveTarget', style: TextStyle(color: scheme.onPrimary)),
-            content: Text(localResult!.isEmpty ? '—' : localResult, style: TextStyle(color: scheme.onPrimary)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK', style: TextStyle(color: scheme.secondary)),
+      final scheme = Theme.of(context).colorScheme;
+      final t = AppLocalizations.of(context);
+      await showDialog(
+        context: context,
+        builder: (_) {
+          String? localResult = result;
+          return StatefulBuilder(
+            builder: (context, setState) => AlertDialog(
+              title: Text(
+                '“$trim” → $effectiveTarget',
+                style: TextStyle(color: scheme.onPrimary),
               ),
-            ],
-          ),
-        );
-      },
-    );
-  } finally {
-    if (mounted) setState(() => _loadingWordIndex = null);
+              content: Text(
+                localResult!.isEmpty ? '—' : localResult!,
+                style: TextStyle(color: scheme.onPrimary),
+              ),
+              actionsPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () async {
+                        final newResult = await WordCache.get(
+                          trim,
+                          effectiveOrigin,
+                          effectiveTarget,
+                        );
+
+                        setState(() {
+                          localResult = newResult;
+                        });
+                      },
+                      child: Text(
+                        t.retraducir,
+                        style: TextStyle(color: scheme.secondary),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        'OK',
+                        style: TextStyle(color: scheme.secondary),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } finally {
+      if (mounted) setState(() => _loadingWordIndex = null);
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
     final (tokens, wordTokenIndexes) = _tokenize(widget.text);
-    final scheme = Theme.of(context).colorScheme; 
+    final scheme = Theme.of(context).colorScheme;
     final defaultStyle = DefaultTextStyle.of(context).style;
     final wordStyle =
         widget.wordStyle ??
@@ -149,75 +190,105 @@ class _TapWordTextState extends State<TapWordText> {
     final rom = widget.romanizationPerWord ?? const <String>[];
 
     int wordCounter = 0;
-final wordIndexSet = wordTokenIndexes.toSet();
-final wordBlocks = <Widget>[];
+    final wordIndexSet = wordTokenIndexes.toSet();
+    final wordBlocks = <Widget>[];
 
-for (int i = 0; i < tokens.length; i++) {
-  final tk = tokens[i];
-  final isWordToken = wordIndexSet.contains(i);
+    for (int i = 0; i < tokens.length; i++) {
+      final tk = tokens[i];
+      final isWordToken = wordIndexSet.contains(i);
 
-  if (isWordToken) {
-    final myWordIndex = wordCounter;
-    final ipaForThisWord = (widget.showPerWordIpa && wordCounter < ipa.length) ? ipa[wordCounter] : '';
-    final romForThisWord = (widget.showPerWordRomanization && wordCounter < rom.length) ? rom[wordCounter] : '';
-    wordCounter++;
+      if (isWordToken) {
+        final myWordIndex = wordCounter;
+        final ipaForThisWord =
+            (widget.showPerWordIpa && wordCounter < ipa.length)
+            ? ipa[wordCounter]
+            : '';
+        final romForThisWord =
+            (widget.showPerWordRomanization && wordCounter < rom.length)
+            ? rom[wordCounter]
+            : '';
+        wordCounter++;
 
-    final baseColumn = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(tk, style: wordStyle, textAlign: TextAlign.center),
-        if (romForThisWord.isNotEmpty) ...[
-          SizedBox(height: widget.gap),
-          Text(romForThisWord, style: ipaStyle, textAlign: TextAlign.center, softWrap: false, maxLines: 1),
-        ],
-        if (ipaForThisWord.isNotEmpty) ...[
-          SizedBox(height: widget.gap),
-          Text(ipaForThisWord, style: ipaStyle, textAlign: TextAlign.center, softWrap: false, maxLines: 1),
-        ],
-      ],
-    );
+        final baseColumn = Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(tk, style: wordStyle, textAlign: TextAlign.center),
+            if (romForThisWord.isNotEmpty) ...[
+              SizedBox(height: widget.gap),
+              Text(
+                romForThisWord,
+                style: ipaStyle,
+                textAlign: TextAlign.center,
+                softWrap: false,
+                maxLines: 1,
+              ),
+            ],
+            if (ipaForThisWord.isNotEmpty) ...[
+              SizedBox(height: widget.gap),
+              Text(
+                ipaForThisWord,
+                style: ipaStyle,
+                textAlign: TextAlign.center,
+                softWrap: false,
+                maxLines: 1,
+              ),
+            ],
+          ],
+        );
 
-    wordBlocks.add(
-        Align(
-          widthFactor: 1,
-          heightFactor: 1,
-          alignment: Alignment.topLeft,
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () => _onTapWord(tk, myWordIndex),
-              behavior: HitTestBehavior.opaque,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.topCenter,
-                children: [
-                  baseColumn,
-                  if (_loadingWordIndex == myWordIndex)
-                    Positioned(
-                      top: -6,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius: BorderRadius.circular(10),
+        wordBlocks.add(
+          Align(
+            widthFactor: 1,
+            heightFactor: 1,
+            alignment: Alignment.topLeft,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => _onTapWord(tk, myWordIndex),
+                behavior: HitTestBehavior.opaque,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.topCenter,
+                  children: [
+                    baseColumn,
+                    if (_loadingWordIndex == myWordIndex)
+                      Positioned(
+                        top: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black87,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: scheme.secondary,
+                          ),
                         ),
-                        child: CircularProgressIndicator(strokeWidth: 2, color: scheme.secondary),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-    );
-  } else {
-    if (tk.trim().isEmpty) {
-      wordBlocks.add(const SizedBox(width: 6));
-    } else {
-      wordBlocks.add(Text(tk, style: wordStyle, textAlign: TextAlign.start, softWrap: true, overflow: TextOverflow.clip, textWidthBasis: TextWidthBasis.parent,));
+        );
+      } else {
+        if (tk.trim().isEmpty) {
+          wordBlocks.add(const SizedBox(width: 6));
+        } else {
+          wordBlocks.add(
+            Text(
+              tk,
+              style: wordStyle,
+              textAlign: TextAlign.start,
+              softWrap: true,
+              overflow: TextOverflow.clip,
+              textWidthBasis: TextWidthBasis.parent,
+            ),
+          );
+        }
+      }
     }
-  }
-}
 
     final wrap = Wrap(
       alignment: WrapAlignment.start,

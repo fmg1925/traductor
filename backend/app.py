@@ -74,6 +74,11 @@ cache = Cache('./.cache')
 _HANGUL_START, _HANGUL_END = 0xAC00, 0xD7A3
 _HAN_RANGES = [(0x4E00, 0x9FFF), (0x3400, 0x4DBF)]
 
+cache_del = getattr(cache, "delete", None)
+cache_set = getattr(cache, "set", cache.add)
+
+SUPPORTED = {"en","es","fr","de","it","pt","ja","jpx","zh","zh-cn","zh-tw","ko","ru","ar","hi"}
+
 def _has_han(s: str) -> bool:
     o = map(ord, s)
     return any(a <= x <= b for x in o for (a, b) in _HAN_RANGES)
@@ -273,8 +278,6 @@ def index() -> Response:
 
     rev_key = "rev:" + cache_key(display_src, originalLanguage, target)
     _rev = cache.get(rev_key)
-    
-    cache_set = getattr(cache, "set", cache.add)
 
     if isinstance(_rev, dict):
         ptr = _rev.get("payload_key")
@@ -466,6 +469,8 @@ def translate() -> Response:
 
     if source == "auto":
         source = detect_lang_safe(sentence)
+        if source not in SUPPORTED:
+            source = "en"
 
     key = cache_key(sentence, source, target)
     _cached = cache.get(key)
@@ -473,8 +478,6 @@ def translate() -> Response:
         "originalIpa","translatedIpa","originalRomanization","translatedRomanization"
     )):
         return retornar(_cached, 200)
-
-    cache_set = getattr(cache, "set", cache.add)
 
     display_src = sentence
     if source in ('ja', 'jpx'):
@@ -617,6 +620,7 @@ def _clean_ocr_by_lang(s: str, lang: str) -> str:
 def ocr() -> Response:
     data = orjson.loads(request.data or b"{}")
     get = data.get
+    originalLanguage =(get("originalLanguage") or "auto").strip().lower()
     target = (get("target") or "en").strip().lower()
 
     img = read_image_from_request()
@@ -631,7 +635,7 @@ def ocr() -> Response:
 
     ocrString = " ".join(t for t in texts if t).strip()
     if not ocrString:
-        return retornar(build_payload("", "", "auto", target), 200)
+        return retornar(build_payload("", "", originalLanguage, target), 200)
 
     if "  " in ocrString or "\n" in ocrString or "\t" in ocrString:
         ocrString = " ".join(ocrString.split())
@@ -639,8 +643,7 @@ def ocr() -> Response:
     ocrString = ''.join(ch for ch in ocrString if not ch.isdigit())
 
     s = ocrString
-    lang = detect_lang_safe(s)
-    SUPPORTED = {"en","es","fr","de","it","pt","ja","jpx","zh","zh-cn","zh-tw","ko","ru","ar","hi"}
+    lang = detect_lang_safe(s) if originalLanguage == 'auto' else originalLanguage
     if lang not in SUPPORTED:
         lang = "en"
         
@@ -654,8 +657,6 @@ def ocr() -> Response:
         "originalIpa","translatedIpa","originalRomanization","translatedRomanization"
     )):
         return retornar(_cached, 200)
-
-    cache_set = getattr(cache, "set", cache.add)
 
     if lang == target:
         display = s
@@ -686,7 +687,7 @@ def ocr() -> Response:
     with _inflight_lock:
         fut = _inflight.get(ltk)
         if fut is None:
-            fut = PRON_POOL.submit(lt_translate, ocrString, lang, target)
+            fut = PRON_POOL.submit(lt_translate, s, lang, target)
             _inflight[ltk] = fut
     try:
         data_lt = fut.result()
@@ -776,8 +777,7 @@ def retranslate() -> Response:
     sentence = " ".join(sentence.split())[:MAX_SENTENCE_LENGTH]
 
     key_payload = cache_key(sentence, sourceLang, targetLang)
-    cache_del = getattr(cache, "delete", None)
-    cache_set = getattr(cache, "set", cache.add)
+    
 
     prev = cache.get(key_payload)
     if cache_del:
