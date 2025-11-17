@@ -181,6 +181,7 @@ ThemeData appTheme(Brightness brightness) {
           onTertiaryFixedVariant: Colors.white,
           onTertiaryContainer: Colors.black26,
           onInverseSurface: Colors.white,
+          onErrorContainer: const Color.fromARGB(50, 0, 0, 0),
         )
       : base.copyWith(
           primary: Color.fromARGB(100, 0, 0, 0),
@@ -199,6 +200,7 @@ ThemeData appTheme(Brightness brightness) {
           onTertiaryFixedVariant: const Color.fromARGB(145, 233, 30, 128),
           onTertiaryContainer: const Color.fromARGB(103, 233, 30, 128),
           onInverseSurface: Colors.black,
+          onErrorContainer: const Color.fromARGB(50, 255, 255, 255),
         );
 
   return ThemeData(
@@ -206,6 +208,9 @@ ThemeData appTheme(Brightness brightness) {
     brightness: brightness,
     colorScheme: scheme,
     scaffoldBackgroundColor: scheme.surface,
+    textSelectionTheme: TextSelectionThemeData(
+      selectionColor: scheme.onErrorContainer,
+    ),
     textTheme: GoogleFonts.notoSansTextTheme(),
     fontFamily: 'Fira Code',
     cardTheme: const CardThemeData(

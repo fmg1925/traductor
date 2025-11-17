@@ -600,6 +600,7 @@ class _TranslationsAreaState extends State<TranslationsArea> {
             return IconButton.filledTonal(
               icon: Icon(isSpeaking ? Icons.stop : Icons.volume_up),
               tooltip: isSpeaking ? t.stop : t.listen,
+              style: IconButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1.2)),
               onPressed: onTts,
               iconSize: 20,
               padding: EdgeInsets.zero,
@@ -612,6 +613,7 @@ class _TranslationsAreaState extends State<TranslationsArea> {
         IconButton.filledTonal(
           icon: const Icon(Icons.copy_all),
           tooltip: t.copy,
+          style: IconButton.styleFrom(side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1.2)),
           onPressed: () {
             Clipboard.setData(ClipboardData(text: copyText));
             ScaffoldMessenger.of(context)

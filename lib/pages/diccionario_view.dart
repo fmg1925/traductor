@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:traductor/main.dart';
 import '../l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:traductor/pages/home.dart' show tts;
@@ -186,7 +187,7 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                                   ),
                                   onPressed: () async {
                                     if (isSpeaking) return await tts.stop();
-                                    await tts.changeLanguage(parts[1]);
+                                    await tts.changeLanguage(ttsLocaleFor(parts[1]));
                                     await tts.speak(word);
                                   },
                                   iconSize: 20,
@@ -225,7 +226,7 @@ class _DiccionarioViewState extends State<DiccionarioView> {
                                   ),
                                   onPressed: () async {
                                     if (isSpeaking) return await tts.stop();
-                                    await tts.changeLanguage(parts[2]);
+                                    await tts.changeLanguage(ttsLocaleFor(parts[2]));
                                     await tts.speak(e.value);
                                   },
                                   iconSize: 20,
